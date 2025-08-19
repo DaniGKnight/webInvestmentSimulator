@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Simulator</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background-color: #2d3748;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .container {
+            max-width: 90vw;
+            margin: 0 auto;
+        }
+        #crosshair-date {
+            position: absolute;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background-color: #4b5563;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        #crosshair-price {
+            position: absolute;
+            right: 0px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 4px 8px;
+            background-color: #4b5563;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        #crosshair-close-price {
+            position: absolute;
+            top: 60px;
+            left: 70px;
+            padding: 4px 8px;
+            background-color: #4b5563;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 20;
+            font-weight: 600;
+        }
+
+        /* Custom table styling for positions and history */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #4b5563;
+        }
+        th {
+            background-color: #374151;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #3e4757;
+        }
+
+        /* Hide the number input arrows */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex flex-col items-center justify-center min-h-screen">
+
+    <!-- Main container -->
+    <div class="container bg-gray-800 p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-4xl">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-center text-white">Investment Simulator</h1>
+
+        <!-- UI controls (File input and Date picker remain at the top) -->
+        <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
+            <!-- File input -->
+            <label class="flex-grow w-full sm:w-auto">
+                <span class="sr-only">Choose file</span>
+                <input type="file" id="fileInput" accept=".txt" class="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-violet-700
+                    hover:file:bg-violet-100
+                "/>
+            </label>
+
+            <!-- Date picker -->
+            <div class="w-full sm:w-auto flex items-center space-x-2">
+                <label for="datePicker" class="text-sm font-medium text-gray-300 whitespace-nowrap">End Date:</label>
+                <input type="date" id="datePicker" class="form-input rounded-lg border-gray-600 bg-gray-700 text-gray-100 p-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors duration-200">
+            </div>
+        </div>
+        
+        <!-- Chart and message area -->
+        <div class="relative w-full h-[500px]">
+            <canvas id="chartCanvas" class="w-full h-full"></canvas>
+            
+            <!-- Combined range and navigation buttons placed on top of the chart -->
+            <div class="absolute top-4 left-4 z-20 flex items-center space-x-2">
+                <!-- Range selection buttons -->
+                <button class="range-btn text-sm px-4 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="1M">1M</button>
+                <button class="range-btn text-sm px-4 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="3M">3M</button>
+                <button class="range-btn text-sm px-4 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="6M">6M</button>
+                <button class="range-btn text-sm px-4 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="12M">12M</button>
+                
+                <!-- Separator -->
+                <div class="h-6 w-[1px] bg-gray-500"></div>
+
+                <!-- Day navigation buttons with new symbols and color -->
+                <button id="prevDayBtn" class="text-sm px-4 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&laquo;</button>
+                <button id="nextDayBtn" class="text-sm px-4 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;</button>
+                <button id="lastDayBtn" class="text-sm px-4 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;&raquo;</button>
+            </div>
+
+            <!-- New element to display the closing price of the day -->
+            <div id="crosshair-close-price"></div>
+            
+            <div id="messageArea" class="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 rounded-xl transition-opacity duration-300 hidden">
+                <p class="text-lg font-semibold text-white">Please upload a file to begin.</p>
+            </div>
+            <!-- Elements to display crosshair info -->
+            <div id="crosshair-date"></div>
+            <div id="crosshair-price"></div>
+        </div>
+
+        <!-- Investment Controls Panel -->
+        <div class="bg-gray-700 p-6 rounded-xl shadow-md mt-6 w-full">
+            <h2 class="text-xl font-bold mb-4 text-white">Investment Control</h2>
+            <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                <div class="flex items-center space-x-2 w-full sm:w-auto">
+                    <label for="investAmount" class="text-sm font-medium text-gray-300">Max Investment ($):</label>
+                    <button id="minusBtn" class="px-2 py-1 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-bold transition-colors">-</button>
+                    <input type="number" id="investAmount" class="w-24 form-input rounded-lg border-gray-600 bg-gray-800 text-gray-100 p-2 text-center" value="1000" min="1000" step="1000">
+                    <button id="plusBtn" class="px-2 py-1 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-bold transition-colors">+</button>
+                </div>
+                <div class="flex space-x-4 w-full sm:w-auto justify-center">
+                    <button id="buyBtn" class="w-full sm:w-auto px-6 py-2 rounded-full font-bold bg-green-600 hover:bg-green-700 transition-colors" disabled>BUY</button>
+                    <button id="sellBtn" class="w-full sm:w-auto px-6 py-2 rounded-full font-bold bg-red-600 hover:bg-red-700 transition-colors" disabled>SELL</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio and Summary Panel -->
+        <div class="bg-gray-700 p-6 rounded-xl shadow-md mt-6 w-full">
+            <h2 class="text-xl font-bold mb-4 text-white">My Portfolio</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-400">Total Invested</p>
+                    <p id="totalInvested" class="text-xl font-bold text-gray-100">$0.00</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-400">Open P&L</p>
+                    <p id="openPnL" class="text-xl font-bold text-gray-100">$0.00</p>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg text-center">
+                    <p class="text-sm text-gray-400">Realized P&L</p>
+                    <p id="realizedPnL" class="text-xl font-bold text-gray-100">$0.00</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="positionsTable" class="min-w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th>Stock</th>
+                            <th>Shares</th>
+                            <th>Avg. Price</th>
+                            <th>Open P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Positions will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <div class="bg-gray-700 p-6 rounded-xl shadow-md mt-6 w-full">
+            <h2 class="text-xl font-bold mb-4 text-white">Transaction History</h2>
+            <div class="overflow-x-auto">
+                <table id="historyTable" class="min-w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Stock</th>
+                            <th>Operation</th>
+                            <th>Shares</th>
+                            <th>Price</th>
+                            <th>Realized P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- History will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Use an IIFE (Immediately Invoked Function Expression) to avoid global scope pollution
+        (function() {
+            // --- Global State Variables ---
+            let stockData = [];
+            let currentIndex = -1;
+            let displayRange = 50;
+            let canvas, ctx;
+            let chartWidth, chartHeight;
+            let dataToDisplay = [];
+            let minPrice, maxPrice, priceScale;
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            
+            // --- Simulator State Variables ---
+            let portfolio = {};
+            let transactionHistory = [];
+            let totalInvestedAmount = 0;
+            let totalRealizedPnL = 0;
+            let currentOpenPnL = 0;
+            const defaultMaxInvestment = 1000;
+            
+            // --- DOM Elements ---
+            const fileInput = document.getElementById('fileInput');
+            const datePicker = document.getElementById('datePicker');
+            const prevDayBtn = document.getElementById('prevDayBtn');
+            const nextDayBtn = document.getElementById('nextDayBtn');
+            const lastDayBtn = document.getElementById('lastDayBtn');
+            const rangeButtons = document.querySelectorAll('.range-btn');
+            const messageArea = document.getElementById('messageArea');
+            const crosshairDateEl = document.getElementById('crosshair-date');
+            const crosshairPriceEl = document.getElementById('crosshair-price');
+            const crosshairClosePriceEl = document.getElementById('crosshair-close-price');
+            
+            // Simulator DOM Elements
+            const investAmountInput = document.getElementById('investAmount');
+            const minusBtn = document.getElementById('minusBtn');
+            const plusBtn = document.getElementById('plusBtn');
+            const buyBtn = document.getElementById('buyBtn');
+            const sellBtn = document.getElementById('sellBtn');
+            const totalInvestedEl = document.getElementById('totalInvested');
+            const openPnLEl = document.getElementById('openPnL');
+            const realizedPnLEl = document.getElementById('realizedPnL');
+            const positionsTableBody = document.querySelector('#positionsTable tbody');
+            const historyTableBody = document.querySelector('#historyTable tbody');
+            
+            // Define padding and margins. Increased left padding for price labels.
+            const padding = 60;
+
+            // --- Initialization ---
+            document.addEventListener('DOMContentLoaded', () => {
+                canvas = document.getElementById('chartCanvas');
+                ctx = canvas.getContext('2d');
+                chartWidth = canvas.clientWidth;
+                chartHeight = canvas.clientHeight;
+                canvas.width = chartWidth;
+                canvas.height = chartHeight;
+
+                showMessage('Please upload a file to begin.');
+
+                // Event Listeners
+                fileInput.addEventListener('change', handleFileUpload);
+                datePicker.addEventListener('change', handleDateChange);
+                prevDayBtn.addEventListener('click', () => stepDay(-1));
+                nextDayBtn.addEventListener('click', () => stepDay(1));
+                lastDayBtn.addEventListener('click', () => jumpToLastDay());
+                rangeButtons.forEach(button => {
+                    button.addEventListener('click', handleRangeChange);
+                });
+
+                // Simulator event listeners
+                minusBtn.addEventListener('click', () => adjustInvestmentAmount(-1000));
+                plusBtn.addEventListener('click', () => adjustInvestmentAmount(1000));
+                buyBtn.addEventListener('click', handleBuy);
+                sellBtn.addEventListener('click', handleSell);
+
+                // Handle window resize to redraw the chart
+                window.addEventListener('resize', () => {
+                    chartWidth = canvas.clientWidth;
+                    chartHeight = canvas.clientHeight;
+                    canvas.width = chartWidth;
+                    canvas.height = chartHeight;
+                    if (stockData.length > 0) {
+                        drawChart();
+                    }
+                });
+
+                // Mouse event listeners for crosshair and date display
+                canvas.addEventListener('mousemove', handleMouseMove);
+                canvas.addEventListener('mouseleave', handleMouseLeave);
+            });
+            
+            function adjustInvestmentAmount(change) {
+                let currentAmount = parseInt(investAmountInput.value);
+                let newAmount = currentAmount + change;
+                if (newAmount >= 1000) {
+                    investAmountInput.value = newAmount;
+                }
+            }
+
+            // --- Data Processing and Parsing ---
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                showMessage('Loading data...');
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const content = e.target.result;
+                        stockData = parseData(content);
+                        if (stockData.length > 0) {
+                            enableControls();
+                            updateDatePickerRange();
+                            currentIndex = stockData.length - 1;
+                            datePicker.value = formatDate(stockData[currentIndex].date);
+                            drawChart();
+                            hideMessage();
+                            updateSimulatorButtons();
+                        } else {
+                            showMessage('No valid data found in the file.');
+                        }
+                    } catch (error) {
+                        console.error("Error parsing file:", error);
+                        showMessage('Error: Could not parse the file. Please check the format.');
+                    }
+                };
+                reader.onerror = () => {
+                    showMessage('Error reading file.');
+                };
+                reader.readAsText(file);
+            }
+
+            function parseData(text) {
+                const lines = text.trim().split('\n').slice(1);
+                return lines.map(line => {
+                    const parts = line.split(',');
+                    const dateStr = parts[2];
+                    const date = new Date(dateStr.substring(0, 4), dateStr.substring(4, 6) - 1, dateStr.substring(6, 8));
+                    
+                    return {
+                        date: date,
+                        stock: parts[0],
+                        open: parseFloat(parts[4]),
+                        high: parseFloat(parts[5]),
+                        low: parseFloat(parts[6]),
+                        close: parseFloat(parts[7])
+                    };
+                }).filter(item => !isNaN(item.open) && !isNaN(item.high) && !isNaN(item.low) && !isNaN(item.close));
+            }
+
+            function updateDatePickerRange() {
+                if (stockData.length > 0) {
+                    const firstDate = stockData[0].date;
+                    const lastDate = stockData[stockData.length - 1].date;
+                    datePicker.min = formatDate(firstDate);
+                    datePicker.max = formatDate(lastDate);
+                }
+            }
+
+            function handleDateChange(event) {
+                const selectedDateStr = event.target.value;
+                const selectedDate = new Date(selectedDateStr);
+                const newIndex = stockData.findIndex(item => {
+                    const itemDate = new Date(formatDate(item.date));
+                    return itemDate.getTime() === selectedDate.getTime();
+                });
+
+                if (newIndex !== -1) {
+                    currentIndex = newIndex;
+                    drawChart();
+                } else {
+                    let closestIndex = -1;
+                    for (let i = 0; i < stockData.length; i++) {
+                        if (stockData[i].date <= selectedDate) {
+                            closestIndex = i;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (closestIndex !== -1) {
+                        currentIndex = closestIndex;
+                        datePicker.value = formatDate(stockData[closestIndex].date);
+                        drawChart();
+                    } else {
+                        currentIndex = 0;
+                        datePicker.value = formatDate(stockData[currentIndex].date);
+                        drawChart();
+                    }
+                }
+                updateButtonStates();
+            }
+
+            function stepDay(direction) {
+                const newIndex = currentIndex + direction;
+                if (newIndex >= 0 && newIndex < stockData.length) {
+                    currentIndex = newIndex;
+                    datePicker.value = formatDate(stockData[currentIndex].date);
+                    drawChart();
+                }
+                updateButtonStates();
+            }
+
+            function jumpToLastDay() {
+                if (stockData.length > 0) {
+                    currentIndex = stockData.length - 1;
+                    datePicker.value = formatDate(stockData[currentIndex].date);
+                    drawChart();
+                    updateButtonStates();
+                }
+            }
+            
+            function handleRangeChange(event) {
+                const range = event.target.dataset.range;
+                let days = 50;
+                switch(range) {
+                    case '1M': days = 30; break;
+                    case '3M': days = 90; break;
+                    case '6M': days = 180; break;
+                    case '12M': days = 365; break;
+                }
+                displayRange = days;
+                drawChart();
+            }
+
+            // --- Chart Drawing Logic ---
+            function drawChart() {
+                ctx.clearRect(0, 0, chartWidth, chartHeight);
+                if (stockData.length === 0) return;
+
+                dataToDisplay = stockData.slice(Math.max(0, currentIndex - displayRange + 1), currentIndex + 1);
+                if (dataToDisplay.length === 0) return;
+
+                const prices = dataToDisplay.flatMap(d => [d.high, d.low]);
+                maxPrice = Math.max(...prices);
+                minPrice = Math.min(...prices);
+
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                const chartAreaWidth = chartWidth - padding * 2;
+                const chartAreaHeight = chartHeight - padding * 2;
+
+                priceScale = chartAreaHeight / ((maxPrice - minPrice) + 2 * pricePadding);
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+
+                ctx.strokeStyle = '#6b7280';
+                ctx.beginPath();
+                ctx.moveTo(padding, chartHeight - padding);
+                ctx.lineTo(chartWidth - padding, chartHeight - padding);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(padding, padding);
+                ctx.lineTo(padding, chartHeight - padding);
+                ctx.stroke();
+
+                let previousMonth = -1;
+                let previousYear = -1;
+                dataToDisplay.forEach((day, index) => {
+                    const x = padding + index * dateScale + dateScale / 2;
+                    const openY = chartHeight - padding - (day.open - minPrice + pricePadding) * priceScale;
+                    const highY = chartHeight - padding - (day.high - minPrice + pricePadding) * priceScale;
+                    const lowY = chartHeight - padding - (day.low - minPrice + pricePadding) * priceScale;
+                    const closeY = chartHeight - padding - (day.close - minPrice + pricePadding) * priceScale;
+
+                    const isBullish = day.close >= day.open;
+                    ctx.strokeStyle = isBullish ? '#10b981' : '#ef4444';
+                    ctx.fillStyle = isBullish ? '#10b981' : '#ef4444';
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, highY);
+                    ctx.lineTo(x, lowY);
+                    ctx.stroke();
+
+                    const bodyHeight = Math.abs(openY - closeY) || 1;
+                    const bodyWidth = dateScale * 0.7;
+                    ctx.fillRect(x - bodyWidth / 2, Math.min(openY, closeY), bodyWidth, bodyHeight);
+
+                    const currentMonth = day.date.getMonth();
+                    const currentYear = day.date.getFullYear();
+                    
+                    if (index > 0 && currentMonth !== previousMonth) {
+                        ctx.strokeStyle = '#4b5563';
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        ctx.moveTo(x, padding);
+                        ctx.lineTo(x, chartHeight - padding);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.fillStyle = '#9ca3af';
+                        ctx.font = '10px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        const dateText = `${monthNames[currentMonth]} ${day.date.getDate()}`;
+                        ctx.fillText(dateText, x, chartHeight - padding + 20);
+                    }
+
+                    if (index > 0 && currentYear !== previousYear) {
+                        ctx.fillStyle = '#9ca3af';
+                        ctx.font = '12px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(currentYear, x, chartHeight - padding + 40);
+                    }
+
+                    previousMonth = currentMonth;
+                    previousYear = currentYear;
+                });
+
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '10px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                const yAxisLabels = 5;
+                for (let i = 0; i <= yAxisLabels; i++) {
+                    const price = minPrice + pricePadding + (maxPrice - minPrice) * (i / yAxisLabels);
+                    const y = chartHeight - padding - (price - minPrice + pricePadding) * priceScale;
+                    ctx.fillText(price.toFixed(2), padding - 10, y);
+                }
+                
+                // Redraw position open PnL based on the last visible candle's closing price
+                if (dataToDisplay.length > 0) {
+                     updateOpenPnL(dataToDisplay[dataToDisplay.length - 1].close);
+                }
+            }
+
+            // --- Crosshair and Date/Price Display Logic ---
+            let crosshairX, crosshairY;
+
+            function handleMouseMove(event) {
+                if (stockData.length === 0) return;
+                const rect = canvas.getBoundingClientRect();
+                crosshairX = event.clientX - rect.left;
+                crosshairY = event.clientY - rect.top;
+
+                const chartAreaX = crosshairX >= padding && crosshairX <= chartWidth - padding;
+                const chartAreaY = crosshairY >= padding && crosshairY <= chartHeight - padding;
+
+                if (chartAreaX && chartAreaY) {
+                    drawChart();
+                    const dataIndex = getNearestCandleIndex(crosshairX);
+                    if (dataIndex !== -1) {
+                        const snappedX = getCandleXPosition(dataIndex);
+                        drawCrosshair(snappedX, crosshairY);
+                        displayCrosshairInfo(snappedX, crosshairY, dataIndex);
+                        displayClosePrice(dataToDisplay[dataIndex].close);
+                        updateOpenPnL(dataToDisplay[dataIndex].close);
+                    } else {
+                         handleMouseLeave();
+                    }
+                } else {
+                    handleMouseLeave();
+                }
+            }
+
+            function handleMouseLeave() {
+                drawChart();
+                crosshairDateEl.style.opacity = 0;
+                crosshairPriceEl.style.opacity = 0;
+                crosshairClosePriceEl.style.opacity = 0;
+                
+                // When leaving the chart, reset the open PnL to the last visible candle's close price
+                if (dataToDisplay.length > 0) {
+                     updateOpenPnL(dataToDisplay[dataToDisplay.length - 1].close);
+                }
+            }
+
+            function drawCrosshair(x, y) {
+                ctx.setLineDash([2, 2]);
+                ctx.strokeStyle = '#ffffff';
+
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, chartHeight - padding);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(chartWidth - padding, y);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
+            }
+
+            function displayCrosshairInfo(x, y, dataIndex) {
+                const day = dataToDisplay[dataIndex];
+                const formattedDate = formatCrosshairDate(day.date);
+                crosshairDateEl.textContent = formattedDate;
+                crosshairDateEl.style.left = `${x}px`;
+                crosshairDateEl.style.opacity = 1;
+
+                const price = yToPrice(y);
+                crosshairPriceEl.textContent = price.toFixed(2);
+                crosshairPriceEl.style.top = `${y}px`;
+                crosshairPriceEl.style.opacity = 1;
+            }
+
+            function displayClosePrice(price) {
+                crosshairClosePriceEl.textContent = `Close: ${price.toFixed(2)}`;
+                crosshairClosePriceEl.style.opacity = 1;
+            }
+
+            function formatCrosshairDate(date) {
+                const d = new Date(date);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = monthNames[d.getMonth()];
+                const year = d.getFullYear();
+                return `${day}-${month}-${year}`;
+            }
+
+            function getNearestCandleIndex(x) {
+                const chartAreaWidth = chartWidth - padding * 2;
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+                const index = Math.floor((x - padding + dateScale / 2) / dateScale);
+                if (index >= 0 && index < dataToDisplay.length) {
+                    return index;
+                }
+                return -1;
+            }
+
+            function getCandleXPosition(index) {
+                const chartAreaWidth = chartWidth - padding * 2;
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+                return padding + index * dateScale + dateScale / 2;
+            }
+            
+            function priceToY(price) {
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                return chartHeight - padding - (price - minPrice + pricePadding) * priceScale;
+            }
+
+            function yToPrice(y) {
+                const chartAreaHeight = chartHeight - padding * 2;
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                const relativeY = chartHeight - padding - y;
+                const priceRange = (maxPrice - minPrice) + 2 * pricePadding;
+                const price = (relativeY / chartAreaHeight) * priceRange + minPrice - pricePadding;
+                return price;
+            }
+
+            // --- Simulator Logic ---
+            function handleBuy() {
+                if (stockData.length === 0 || currentIndex === -1) return;
+                const currentDay = stockData[currentIndex];
+                const currentPrice = currentDay.close;
+                const maxInvestment = parseFloat(investAmountInput.value);
+                
+                if (currentPrice <= 0 || maxInvestment <= 0) return;
+
+                const sharesToBuy = Math.floor(maxInvestment / currentPrice);
+                if (sharesToBuy === 0) {
+                     // In a real app, you'd show a modal here.
+                    console.log("Maximum investment is too small to buy even one share.");
+                    return;
+                }
+
+                const cost = sharesToBuy * currentPrice;
+                const stock = currentDay.stock;
+
+                if (portfolio[stock]) {
+                    // Update existing position
+                    const currentShares = portfolio[stock].shares;
+                    const currentCost = currentShares * portfolio[stock].avgPrice;
+                    const newTotalShares = currentShares + sharesToBuy;
+                    const newTotalCost = currentCost + cost;
+                    const newAvgPrice = newTotalCost / newTotalShares;
+                    
+                    portfolio[stock].shares = newTotalShares;
+                    portfolio[stock].avgPrice = newAvgPrice;
+                } else {
+                    // Create new position
+                    portfolio[stock] = {
+                        shares: sharesToBuy,
+                        avgPrice: currentPrice,
+                        openPnL: 0
+                    };
+                }
+
+                totalInvestedAmount += cost;
+                
+                // Add to history
+                transactionHistory.push({
+                    date: currentDay.date,
+                    stock: stock,
+                    operation: 'Buy',
+                    shares: sharesToBuy,
+                    price: currentPrice,
+                    realizedPnL: 0
+                });
+
+                renderPortfolio();
+                renderHistory();
+            }
+
+            function handleSell() {
+                if (stockData.length === 0 || currentIndex === -1) return;
+                const currentDay = stockData[currentIndex];
+                const currentPrice = currentDay.close;
+                const stock = currentDay.stock;
+                
+                if (!portfolio[stock] || portfolio[stock].shares === 0) {
+                    console.log("No shares to sell.");
+                    return;
+                }
+
+                const sharesToSell = portfolio[stock].shares;
+                const avgPrice = portfolio[stock].avgPrice;
+                const gainLoss = (currentPrice - avgPrice) * sharesToSell;
+
+                totalRealizedPnL += gainLoss;
+                totalInvestedAmount -= sharesToSell * avgPrice;
+                
+                // Add to history
+                transactionHistory.push({
+                    date: currentDay.date,
+                    stock: stock,
+                    operation: 'Sell',
+                    shares: sharesToSell,
+                    price: currentPrice,
+                    realizedPnL: gainLoss
+                });
+                
+                // Remove from portfolio and reset open P&L
+                delete portfolio[stock];
+                currentOpenPnL = 0;
+
+                renderPortfolio();
+                renderHistory();
+            }
+
+            function updateOpenPnL(currentPrice) {
+                currentOpenPnL = 0;
+                for (const stock in portfolio) {
+                    const position = portfolio[stock];
+                    const pnl = (currentPrice - position.avgPrice) * position.shares;
+                    position.openPnL = pnl;
+                    currentOpenPnL += pnl;
+                }
+                renderPortfolio();
+            }
+
+            function renderPortfolio() {
+                // Update summary numbers
+                totalInvestedEl.textContent = `$${totalInvestedAmount.toFixed(2)}`;
+                openPnLEl.textContent = `$${currentOpenPnL.toFixed(2)}`;
+                realizedPnLEl.textContent = `$${totalRealizedPnL.toFixed(2)}`;
+                
+                // Style the P&L text
+                openPnLEl.classList.remove('text-red-500', 'text-green-500');
+                if (currentOpenPnL > 0) openPnLEl.classList.add('text-green-500');
+                if (currentOpenPnL < 0) openPnLEl.classList.add('text-red-500');
+
+                realizedPnLEl.classList.remove('text-red-500', 'text-green-500');
+                if (totalRealizedPnL > 0) realizedPnLEl.classList.add('text-green-500');
+                if (totalRealizedPnL < 0) realizedPnLEl.classList.add('text-red-500');
+
+                // Update positions table
+                positionsTableBody.innerHTML = '';
+                for (const stock in portfolio) {
+                    const position = portfolio[stock];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${stock}</td>
+                        <td>${position.shares.toFixed(0)}</td>
+                        <td>$${position.avgPrice.toFixed(2)}</td>
+                        <td class="${position.openPnL >= 0 ? 'text-green-500' : 'text-red-500'}">$${position.openPnL.toFixed(2)}</td>
+                    `;
+                    positionsTableBody.appendChild(row);
+                }
+            }
+
+            function renderHistory() {
+                historyTableBody.innerHTML = '';
+                // Render in reverse chronological order
+                [...transactionHistory].reverse().forEach(movement => {
+                    const row = document.createElement('tr');
+                    let pnlColorClass = '';
+                    if (movement.operation === 'Sell') {
+                        if (movement.realizedPnL > 0) pnlColorClass = 'text-green-500';
+                        if (movement.realizedPnL < 0) pnlColorClass = 'text-red-500';
+                    }
+                    row.innerHTML = `
+                        <td>${formatDate(movement.date)}</td>
+                        <td>${movement.stock}</td>
+                        <td>${movement.operation}</td>
+                        <td>${movement.shares.toFixed(0)}</td>
+                        <td>$${movement.price.toFixed(2)}</td>
+                        <td class="${pnlColorClass}">$${movement.realizedPnL.toFixed(2)}</td>
+                    `;
+                    historyTableBody.appendChild(row);
+                });
+            }
+
+            // --- UI Helpers ---
+            function formatDate(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function enableControls() {
+                datePicker.disabled = false;
+                prevDayBtn.disabled = false;
+                nextDayBtn.disabled = false;
+                lastDayBtn.disabled = false;
+                rangeButtons.forEach(btn => btn.disabled = false);
+            }
+
+            function updateButtonStates() {
+                prevDayBtn.disabled = currentIndex <= 0;
+                nextDayBtn.disabled = currentIndex >= stockData.length - 1;
+            }
+
+            function updateSimulatorButtons() {
+                if (stockData.length > 0) {
+                    buyBtn.disabled = false;
+                    sellBtn.disabled = false;
+                } else {
+                    buyBtn.disabled = true;
+                    sellBtn.disabled = true;
+                }
+            }
+
+            function showMessage(msg) {
+                messageArea.classList.remove('hidden');
+                messageArea.querySelector('p').textContent = msg;
+                datePicker.disabled = true;
+                prevDayBtn.disabled = true;
+                nextDayBtn.disabled = true;
+                lastDayBtn.disabled = true;
+                rangeButtons.forEach(btn => btn.disabled = true);
+            }
+
+            function hideMessage() {
+                messageArea.classList.add('hidden');
+            }
+        })();
+    </script>
+</body>
+</html>
