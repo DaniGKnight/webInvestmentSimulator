@@ -271,7 +271,7 @@
 
             // --- GitHub API Configuration ---
             // The URL has been updated to use the repository you provided.
-            const githubApiUrl = 'https://api.github.com/repos/DaniGKnight/webInvestmentSimulator/contents/stock_data/';
+            const githubApiUrl = 'https://api.github.com/repos/DaniGKnight/webInvestmentSimulator/contents/stock_data';
             
             // --- DOM Elements ---
             const datePicker = document.getElementById('datePicker');
@@ -379,16 +379,21 @@
             async function handleStockSelection() {
                 const selectedOption = stockSelector.options[stockSelector.selectedIndex];
                 const downloadUrl = selectedOption.dataset.downloadUrl;
-
-                if (!downloadUrl) return;
+                // If the "Loading stocks..." option is selected, disable the date picker
+                if (!downloadUrl) {
+                    datePicker.disabled = true;
+                    return;
+                }
 
                 try {
                     showMessage('Loading stock data...');
                     const response = await fetch(downloadUrl);
                     const content = await response.text();
+                    // Store the data for the selected stock, not all stocks
                     allStockData = parseData(content);
                     if (allStockData.length > 0) {
-                        updateDatePickerRange();
+                        // FIX: Update date picker range with the newly loaded stock data
+                        updateDatePickerRange(allStockData);
                         datePicker.disabled = false;
                         hideMessage();
                     } else {
@@ -502,14 +507,24 @@
                     option.dataset.downloadUrl = stock.download_url;
                     stockSelector.appendChild(option);
                 });
+                // Add a placeholder option at the beginning
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = '-- Select a stock --';
+                placeholderOption.disabled = true;
+                placeholderOption.selected = true;
+                stockSelector.prepend(placeholderOption);
             }
-
-            function updateDatePickerRange() {
-                if (allStockData.length > 0) {
-                    const firstDate = allStockData[0].date;
-                    const lastDate = allStockData[allStockData.length - 1].date;
+            
+            // FIX: This function now takes the specific stock data as an argument
+            function updateDatePickerRange(data) {
+                if (data.length > 0) {
+                    const firstDate = data[0].date;
+                    const lastDate = data[data.length - 1].date;
                     datePicker.min = formatDate(firstDate);
                     datePicker.max = formatDate(lastDate);
+                    // Reset the value to ensure it's within the new range
+                    datePicker.value = '';
                 }
             }
             
@@ -928,4 +943,3 @@
     </script>
 </body>
 </html>
-
