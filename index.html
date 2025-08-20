@@ -105,7 +105,6 @@
         <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-center text-white">Investment Simulator</h1>
 
         <!-- UI controls (File input and Date picker) -->
-        <!-- Added a flex-col layout for small screens -->
         <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
             <!-- File input -->
             <label class="flex-grow w-full sm:w-auto">
@@ -126,31 +125,31 @@
             </div>
         </div>
         
+        <!-- Button bar above the chart -->
+        <div class="flex flex-row justify-between items-center w-full mb-4 space-x-2">
+            <!-- Range selection buttons -->
+            <div class="flex space-x-1 sm:space-x-2 w-full justify-between sm:justify-start">
+                <button class="range-btn text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="1M">1M</button>
+                <button class="range-btn text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="3M">3M</button>
+                <button class="range-btn text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="6M">6M</button>
+                <button class="range-btn text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="12M">12M</button>
+            </div>
+            
+            <!-- Separator -->
+            <div class="h-6 w-[1px] bg-gray-500 hidden sm:block"></div>
+
+            <!-- Day navigation buttons with new symbols and color -->
+            <div class="flex space-x-1 sm:space-x-2 w-full justify-between sm:justify-end">
+                <button id="prevDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&laquo;</button>
+                <button id="nextDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;</button>
+                <button id="lastDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;&raquo;</button>
+            </div>
+        </div>
+        
         <!-- Chart and message area -->
-        <div class="relative w-full h-[300px] sm:h-[500px]"> <!-- Reduced height for mobile -->
+        <div class="relative w-full h-[300px] sm:h-[500px]">
             <canvas id="chartCanvas" class="w-full h-full"></canvas>
             
-            <!-- Combined range and navigation buttons placed on top of the chart -->
-            <div class="absolute top-2 left-2 z-20 flex flex-col sm:flex-row items-start sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
-                <!-- Range selection buttons -->
-                <div class="flex space-x-1">
-                    <button class="range-btn text-xs px-2 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="1M">1M</button>
-                    <button class="range-btn text-xs px-2 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="3M">3M</button>
-                    <button class="range-btn text-xs px-2 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="6M">6M</button>
-                    <button class="range-btn text-xs px-2 py-1 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="12M">12M</button>
-                </div>
-                
-                <!-- Separator -->
-                <div class="h-6 w-[1px] bg-gray-500 hidden sm:block"></div>
-
-                <!-- Day navigation buttons with new symbols and color -->
-                <div class="flex space-x-1">
-                    <button id="prevDayBtn" class="text-xs px-2 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&laquo;</button>
-                    <button id="nextDayBtn" class="text-xs px-2 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;</button>
-                    <button id="lastDayBtn" class="text-xs px-2 py-1 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&raquo;&raquo;</button>
-                </div>
-            </div>
-
             <!-- New element to display the closing price of the day -->
             <div id="crosshair-close-price"></div>
             
@@ -163,7 +162,7 @@
         </div>
 
         <!-- Investment Controls Panel -->
-        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full"> <!-- Reduced padding for mobile -->
+        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
             <h2 class="text-xl font-bold mb-4 text-white">Investment Control</h2>
             <!-- Use a single column layout with wrapping for mobile -->
             <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
@@ -182,7 +181,7 @@
         </div>
 
         <!-- Portfolio and Summary Panel -->
-        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full"> <!-- Reduced padding for mobile -->
+        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
             <h2 class="text-xl font-bold mb-4 text-white">My Portfolio</h2>
             <!-- Grid columns now become a single column on mobile -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
@@ -216,7 +215,7 @@
         </div>
 
         <!-- History Panel -->
-        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full"> <!-- Reduced padding for mobile -->
+        <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
             <h2 class="text-xl font-bold mb-4 text-white">Transaction History</h2>
             <div class="overflow-x-auto">
                 <table id="historyTable" class="min-w-full text-sm">
