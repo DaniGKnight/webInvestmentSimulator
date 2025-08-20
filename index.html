@@ -270,7 +270,6 @@
             let liquidationValue = 0;
 
             // --- GitHub API Configuration ---
-            // The URL has been updated to use the repository you provided.
             const githubApiUrl = 'https://api.github.com/repos/DaniGKnight/webInvestmentSimulator/contents/stock_data';
             
             // --- DOM Elements ---
@@ -314,7 +313,6 @@
                 canvas.width = chartWidth;
                 canvas.height = chartHeight;
 
-                // Call the new function to load stocks from GitHub
                 loadAvailableStocks();
 
                 // Event Listeners
@@ -379,7 +377,6 @@
             async function handleStockSelection() {
                 const selectedOption = stockSelector.options[stockSelector.selectedIndex];
                 const downloadUrl = selectedOption.dataset.downloadUrl;
-                // If the "Loading stocks..." option is selected, disable the date picker
                 if (!downloadUrl) {
                     datePicker.disabled = true;
                     return;
@@ -389,10 +386,8 @@
                     showMessage('Loading stock data...');
                     const response = await fetch(downloadUrl);
                     const content = await response.text();
-                    // Store the data for the selected stock, not all stocks
                     allStockData = parseData(content);
                     if (allStockData.length > 0) {
-                        // FIX: Update date picker range with the newly loaded stock data
                         updateDatePickerRange(allStockData);
                         datePicker.disabled = false;
                         hideMessage();
@@ -441,25 +436,34 @@
                 
                 // Filter data based on user selection
                 stockData = allStockData.filter(item => item.stock === selectedStock);
-                const endDate = new Date(endDateStr);
-                const endIndex = stockData.findIndex(item => formatDate(item.date) === endDateStr);
-                
-                if (endIndex === -1) {
-                    startMessageArea.textContent = 'Invalid end date for selected stock. Please choose another.';
-                    startMessageArea.classList.remove('hidden');
-                    return;
-                }
-                
-                // Fix: Slicing needs to include the end date, so slice up to endIndex + 1.
-                // This ensures the last selected day is included in the data set.
-                stockData = stockData.slice(0, endIndex + 1);
                 
                 if (stockData.length === 0) {
-                    startMessageArea.textContent = 'No data available for the selected range.';
+                    startMessageArea.textContent = 'No data available for the selected stock.';
                     startMessageArea.classList.remove('hidden');
                     return;
                 }
 
+                // FIX: Find the closest valid trading day on or before the selected date.
+                let endIndex = -1;
+                const selectedDate = new Date(endDateStr);
+                for (let i = stockData.length - 1; i >= 0; i--) {
+                    // Compare the dates directly
+                    const dataDate = stockData[i].date;
+                    if (dataDate <= selectedDate) {
+                        endIndex = i;
+                        break;
+                    }
+                }
+
+                if (endIndex === -1) {
+                    startMessageArea.textContent = 'No valid trading days found before your selected end date.';
+                    startMessageArea.classList.remove('hidden');
+                    return;
+                }
+
+                // Slice the data to include everything up to and including the found end date
+                stockData = stockData.slice(0, endIndex + 1);
+                
                 // Initialize game state
                 startFunds = initialFunds;
                 remainingFunds = initialFunds;
@@ -518,7 +522,7 @@
                 stockSelector.prepend(placeholderOption);
             }
             
-            // FIX: This function now takes the specific stock data as an argument
+            // This function now takes the specific stock data as an argument
             function updateDatePickerRange(data) {
                 if (data.length > 0) {
                     const firstDate = data[0].date;
@@ -633,7 +637,6 @@
                     ctx.fillText(price.toFixed(2), padding - 10, y);
                 }
                 
-                // Update portfolio values with the current day's data
                 if (dataToDisplay.length > 0) {
                      updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
                 }
@@ -674,7 +677,6 @@
                 crosshairPriceEl.style.opacity = 0;
                 crosshairClosePriceEl.style.opacity = 0;
                 
-                // When leaving the chart, reset the liquidation value to the last visible candle's close price
                 if (dataToDisplay.length > 0) {
                      updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
                 }
