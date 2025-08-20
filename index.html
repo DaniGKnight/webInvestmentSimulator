@@ -100,6 +100,11 @@
         .hidden {
             display: none;
         }
+        
+        .disabled-btn {
+             cursor: not-allowed;
+             opacity: 0.5;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 flex flex-col items-center justify-center min-h-screen">
@@ -134,7 +139,7 @@
                 <input type="date" id="datePicker" class="form-input rounded-lg border-gray-600 bg-gray-700 text-gray-100 p-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors duration-200" disabled>
             </div>
 
-            <button id="startGameBtn" class="mt-8 px-6 py-3 rounded-full font-bold bg-green-600 hover:bg-green-700 transition-colors" disabled>Start Game</button>
+            <button id="startGameBtn" class="mt-8 px-6 py-3 rounded-full font-bold bg-gray-600 disabled-btn transition-colors" disabled>Start Game</button>
             <div id="startMessageArea" class="mt-4 text-red-400 font-semibold hidden"></div>
         </div>
         
@@ -287,6 +292,7 @@
             const startFundsInput = document.getElementById('startFunds');
             const startGameBtn = document.getElementById('startGameBtn');
             const startMessageArea = document.getElementById('startMessageArea');
+            const originalStartGameBtnClasses = 'mt-8 px-6 py-3 rounded-full font-bold bg-gray-600 disabled-btn transition-colors';
 
             // Simulator DOM Elements
             const investAmountInput = document.getElementById('investAmount');
@@ -318,6 +324,10 @@
                 // Event Listeners
                 nextDayBtn.addEventListener('click', () => stepDay(1));
                 startGameBtn.addEventListener('click', startGame);
+
+                // Add event listeners for validation logic
+                stockSelector.addEventListener('change', handleStockSelection);
+                datePicker.addEventListener('change', handleDateSelection);
 
                 // Simulator event listeners
                 minusBtn.addEventListener('click', () => adjustInvestmentAmount(-1000));
@@ -361,10 +371,9 @@
                     if (stockOptions.length > 0) {
                         populateStockSelector(stockOptions);
                         hideMessage();
-                        startGameBtn.disabled = false;
                         stockSelector.disabled = false;
-                        // The date picker will be enabled after a stock is selected
-                        stockSelector.addEventListener('change', handleStockSelection);
+                        // Initial check for button state
+                        updateStartButtonState();
                     } else {
                         showMessage('No valid stock data files found in the repository.');
                     }
@@ -377,8 +386,14 @@
             async function handleStockSelection() {
                 const selectedOption = stockSelector.options[stockSelector.selectedIndex];
                 const downloadUrl = selectedOption.dataset.downloadUrl;
+                
+                // Disable date picker and start button until new data is loaded
+                datePicker.disabled = true;
+                datePicker.value = '';
+                stockData = [];
+                updateStartButtonState();
+
                 if (!downloadUrl) {
-                    datePicker.disabled = true;
                     return;
                 }
 
@@ -387,8 +402,10 @@
                     const response = await fetch(downloadUrl);
                     const content = await response.text();
                     allStockData = parseData(content);
-                    if (allStockData.length > 0) {
-                        updateDatePickerRange(allStockData);
+                    stockData = allStockData; // Use the full dataset for this stock
+                    
+                    if (stockData.length > 0) {
+                        updateDatePickerRange(stockData);
                         datePicker.disabled = false;
                         hideMessage();
                     } else {
@@ -398,6 +415,30 @@
                     console.error("Error fetching stock data:", error);
                     showMessage('Error: Could not fetch stock data.');
                 }
+            }
+
+            // New function to handle date selection and validate
+            function handleDateSelection() {
+                const selectedDateStr = datePicker.value;
+                if (!selectedDateStr) {
+                    updateStartButtonState(); // Will disable the button
+                    return;
+                }
+                
+                // Format the selected date to match the data format for comparison
+                const formattedDate = new Date(selectedDateStr).toISOString().split('T')[0];
+                const isDateValid = stockData.some(day => {
+                    const dataDate = new Date(day.date).toISOString().split('T')[0];
+                    return dataDate === formattedDate;
+                });
+
+                if (isDateValid) {
+                    startMessageArea.classList.add('hidden');
+                } else {
+                    startMessageArea.textContent = 'Invalid end date. Please choose a valid trading day.';
+                    startMessageArea.classList.remove('hidden');
+                }
+                updateStartButtonState(isDateValid);
             }
             
             // --- Start Screen Logic ---
@@ -414,56 +455,27 @@
                 const endDateStr = datePicker.value;
                 const initialFunds = parseFloat(startFundsInput.value);
 
-                if (!selectedStock) {
-                    startMessageArea.textContent = 'Please select a stock.';
-                    startMessageArea.classList.remove('hidden');
-                    return;
-                }
-                
-                if (!endDateStr) {
-                    startMessageArea.textContent = 'Please select an end date.';
-                    startMessageArea.classList.remove('hidden');
-                    return;
-                }
-                
-                if (initialFunds <= 0 || isNaN(initialFunds)) {
-                     startMessageArea.textContent = 'Please enter valid starting funds.';
-                     startMessageArea.classList.remove('hidden');
-                     return;
-                }
-
-                startMessageArea.classList.add('hidden');
-                
-                // Filter data based on user selection
-                stockData = allStockData.filter(item => item.stock === selectedStock);
-                
-                if (stockData.length === 0) {
-                    startMessageArea.textContent = 'No data available for the selected stock.';
+                // Re-validate just in case, though the button state should prevent this
+                if (!selectedStock || !endDateStr || initialFunds <= 0 || isNaN(initialFunds)) {
+                    startMessageArea.textContent = 'Please fill out all fields correctly.';
                     startMessageArea.classList.remove('hidden');
                     return;
                 }
 
-                // FIX: Find the closest valid trading day on or before the selected date.
-                let endIndex = -1;
-                const selectedDate = new Date(endDateStr);
-                for (let i = stockData.length - 1; i >= 0; i--) {
-                    // Compare the dates directly
-                    const dataDate = stockData[i].date;
-                    if (dataDate <= selectedDate) {
-                        endIndex = i;
-                        break;
-                    }
-                }
-
+                // Slice the stock data up to the selected end date
+                const endDate = new Date(endDateStr);
+                const endIndex = stockData.findIndex(d => d.date.getTime() === endDate.getTime());
+                
                 if (endIndex === -1) {
-                    startMessageArea.textContent = 'No valid trading days found before your selected end date.';
+                    // This case should not be reached if validation is correct
+                    startMessageArea.textContent = 'Could not find the selected end date. Please try again.';
                     startMessageArea.classList.remove('hidden');
                     return;
                 }
 
-                // Slice the data to include everything up to and including the found end date
+                // Set the final data to be used in the simulation
                 stockData = stockData.slice(0, endIndex + 1);
-                
+
                 // Initialize game state
                 startFunds = initialFunds;
                 remainingFunds = initialFunds;
@@ -483,6 +495,21 @@
                 updatePortfolioValues();
                 renderPortfolio();
                 renderHistory();
+            }
+
+            function updateStartButtonState(isDateValid = false) {
+                 const stockSelected = stockSelector.value !== '';
+                 const dateSelected = datePicker.value !== '';
+                 const isReady = stockSelected && dateSelected && isDateValid;
+                 
+                 startGameBtn.disabled = !isReady;
+                 if (isReady) {
+                     startGameBtn.classList.remove('bg-gray-600', 'disabled-btn');
+                     startGameBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                 } else {
+                     startGameBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                     startGameBtn.classList.add('bg-gray-600', 'disabled-btn');
+                 }
             }
 
             // --- Data Processing and Parsing ---
