@@ -443,13 +443,15 @@
                 stockData = allStockData.filter(item => item.stock === selectedStock);
                 const endDate = new Date(endDateStr);
                 const endIndex = stockData.findIndex(item => formatDate(item.date) === endDateStr);
-
+                
                 if (endIndex === -1) {
                     startMessageArea.textContent = 'Invalid end date for selected stock. Please choose another.';
                     startMessageArea.classList.remove('hidden');
                     return;
                 }
                 
+                // Fix: Slicing needs to include the end date, so slice up to endIndex + 1.
+                // This ensures the last selected day is included in the data set.
                 stockData = stockData.slice(0, endIndex + 1);
                 
                 if (stockData.length === 0) {
