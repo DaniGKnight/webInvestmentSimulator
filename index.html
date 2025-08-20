@@ -134,9 +134,6 @@
                 <button class="range-btn text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors" data-range="12M">12M</button>
             </div>
             
-            <!-- Separator -->
-            <div class="h-6 w-[1px] bg-gray-500 hidden sm:block"></div>
-
             <!-- Day navigation buttons with new symbols and color -->
             <div class="flex space-x-1 sm:space-x-2 w-full justify-between sm:justify-end">
                 <button id="prevDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 transition-colors" disabled>&laquo;</button>
@@ -221,11 +218,10 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Stock</th>
-                            <th>Operation</th>
-                            <th>Shares</th>
+                            <th>Order</th>
+                            <th>#</th>
                             <th>Price</th>
-                            <th>Realized P&L</th>
+                            <th>P&L</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -814,7 +810,6 @@
                     }
                     row.innerHTML = `
                         <td>${formatDate(movement.date)}</td>
-                        <td>${movement.stock}</td>
                         <td>${movement.operation}</td>
                         <td>${movement.shares.toFixed(0)}</td>
                         <td>$${movement.price.toFixed(2)}</td>
