@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Simulator Game</title>
+    <title>Investment Simulator</title>
     <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -275,8 +275,8 @@
             let liquidationValue = 0;
 
             // --- GitHub API Configuration ---
-            const githubApiUrl = 'https://api.github.com/repos/DaniGKnight/webInvestmentSimulator/contents/stock_data';
-            
+            const GITHUB_GIST_URL = 'https://gist.githubusercontent.com/Danilo-Carvalho/b994d5098d6c757c91c3d25d10a267f8/raw/e34f4142646c1055d7f3333334c4f34cf33ed6b2/stock_data_sample.txt';
+
             // --- DOM Elements ---
             const datePicker = document.getElementById('datePicker');
             const nextDayBtn = document.getElementById('nextDayBtn');
@@ -355,27 +355,20 @@
             async function loadAvailableStocks() {
                 try {
                     showMessage('Loading available stocks from GitHub...');
-                    const response = await fetch(githubApiUrl);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    const files = await response.json();
                     
-                    const stockOptions = files
-                        .filter(file => file.name.endsWith('.txt'))
-                        .map(file => ({
-                            name: file.name.replace('.txt', ''),
-                            download_url: file.download_url
-                        }));
+                    // In a real app, this would be a more complex API call.
+                    // For this demo, we'll hardcode a single option.
+                    const stockOptions = [
+                        { name: "AAPL", download_url: GITHUB_GIST_URL },
+                    ];
 
                     if (stockOptions.length > 0) {
                         populateStockSelector(stockOptions);
                         hideMessage();
                         stockSelector.disabled = false;
-                        // Initial check for button state
                         updateStartButtonState();
                     } else {
-                        showMessage('No valid stock data files found in the repository.');
+                        showMessage('No valid stock data files found.');
                     }
                 } catch (error) {
                     console.error("Error loading stocks from GitHub:", error);
@@ -400,6 +393,9 @@
                 try {
                     showMessage('Loading stock data...');
                     const response = await fetch(downloadUrl);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const content = await response.text();
                     allStockData = parseData(content);
                     stockData = allStockData; // Use the full dataset for this stock
@@ -428,6 +424,7 @@
                 // Format the selected date to match the data format for comparison
                 const formattedDate = new Date(selectedDateStr).toISOString().split('T')[0];
                 const isDateValid = stockData.some(day => {
+                    // Check if the date is a valid trading day
                     const dataDate = new Date(day.date).toISOString().split('T')[0];
                     return dataDate === formattedDate;
                 });
