@@ -110,7 +110,7 @@
              opacity: 0.5;
         }
 
-        .zoom-btn.selected {
+        .game-zoom-btn.selected {
             background-color: #4f46e5;
         }
     </style>
@@ -137,14 +137,6 @@
                 </div>
             </div>
 
-            <!-- Zoom controls for Start Screen -->
-            <div class="flex items-center space-x-2 w-full justify-center mb-6">
-                 <label class="text-sm font-medium text-gray-300">Candles to display:</label>
-                 <button id="zoom50" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors selected">50</button>
-                 <button id="zoom100" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">100</button>
-                 <button id="zoom200" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">200</button>
-            </div>
-
             <!-- Date picker -->
             <div class="w-full sm:w-auto flex items-center space-x-2">
                 <label for="datePicker" class="text-sm font-medium text-gray-300 whitespace-nowrap">End Date:</label>
@@ -160,10 +152,16 @@
             <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-center text-white">AAPL Investment Simulator</h1>
 
             <!-- Button bar above the chart -->
-            <div class="flex flex-row justify-end items-center w-full mb-4 space-x-2">
+            <div class="flex flex-row justify-between items-center w-full mb-4 space-x-2">
+                 <!-- Zoom controls for Game Screen -->
+                <div class="flex items-center space-x-2">
+                     <label class="text-sm font-medium text-gray-300">Candles:</label>
+                     <button id="gameZoom50" class="game-zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors selected">50</button>
+                     <button id="gameZoom100" class="game-zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">100</button>
+                     <button id="gameZoom200" class="game-zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">200</button>
+                </div>
                 <!-- Day navigation button -->
-                <div class="flex space-x-1 sm:space-x-2 w-full justify-end">
-                    <button id="prevDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors" disabled>Previous Day</button>
+                <div class="flex space-x-1 sm:space-x-2">
                     <button id="nextDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors">Next Day</button>
                 </div>
             </div>
@@ -526,11 +524,10 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             let startFunds = 0;
             let remainingFunds = 0;
             let liquidationValue = 0;
-            let candlesToDisplay = 50;
+            let candlesToDisplay = 50; // Default to 50 candles
 
             // --- DOM Elements ---
             const datePicker = document.getElementById('datePicker');
-            const prevDayBtn = document.getElementById('prevDayBtn');
             const nextDayBtn = document.getElementById('nextDayBtn');
             const messageArea = document.getElementById('messageArea');
             const crosshairDateEl = document.getElementById('crosshair-date');
@@ -543,7 +540,7 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             const startFundsInput = document.getElementById('startFunds');
             const startGameBtn = document.getElementById('startGameBtn');
             const startMessageArea = document.getElementById('startMessageArea');
-            const zoomButtons = document.querySelectorAll('.zoom-btn');
+            const gameZoomButtons = document.querySelectorAll('.game-zoom-btn');
 
             // Simulator DOM Elements
             const investAmountInput = document.getElementById('investAmount');
@@ -590,7 +587,6 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 updateStartButtonState();
 
                 // Event Listeners
-                prevDayBtn.addEventListener('click', () => stepDay(-1));
                 nextDayBtn.addEventListener('click', () => stepDay(1));
                 startGameBtn.addEventListener('click', startGame);
 
@@ -598,13 +594,18 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 datePicker.addEventListener('change', handleDateSelection);
                 startFundsInput.addEventListener('input', updateStartButtonState);
                 
-                // Add event listeners for zoom buttons
-                zoomButtons.forEach(btn => {
+                // Add event listeners for game zoom buttons
+                gameZoomButtons.forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        zoomButtons.forEach(b => b.classList.remove('selected'));
+                        gameZoomButtons.forEach(b => b.classList.remove('selected'));
                         e.target.classList.add('selected');
                         candlesToDisplay = parseInt(e.target.textContent);
-                        updateDatePickerRange(allStockData);
+                        
+                        // Reload data for the chart and redraw
+                        const startIndex = Math.max(0, currentIndex - candlesToDisplay + 1);
+                        stockData = allStockData.slice(startIndex, currentIndex + 1);
+                        drawChart();
+                        updateSimulatorButtons();
                     });
                 });
 
@@ -743,7 +744,6 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             
             function stepDay(direction) {
                 const newIndex = currentIndex + direction;
-                const newRelativeIndex = stockData.findIndex(d => d.date.getTime() === allStockData[newIndex].date.getTime());
                 
                 if (newIndex >= (candlesToDisplay - 1) && newIndex < allStockData.length) {
                     currentIndex = newIndex;
@@ -1146,13 +1146,6 @@ AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                     nextDayBtn.disabled = true;
                 } else {
                     nextDayBtn.disabled = false;
-                }
-
-                // If we are at the first day of the currently displayed data
-                if (currentIndex <= candlesToDisplay - 1) {
-                    prevDayBtn.disabled = true;
-                } else {
-                    prevDayBtn.disabled = false;
                 }
 
                 // Buy/Sell buttons are always enabled as long as there is data
