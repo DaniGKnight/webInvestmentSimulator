@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Investment Simulator</title>
+    <!-- 
+        STEP 1: CUSTOMIZE THIS FILE
+        Change the title to the name of your stock. 
+    -->
+    <title>AAPL Investment Simulator</title>
     <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -32,459 +36,906 @@
             left: 50%;
             transform: translateX(-50%);
             padding: 4px 8px;
-            background-color: rgba(45, 55, 72, 0.8);
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-            color: #e2e8f0;
-            pointer-events: none;
+            background-color: #4b5563;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        #crosshair-price {
+            position: absolute;
+            right: 0px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 4px 8px;
+            background-color: #4b5563;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+        }
+        #crosshair-close-price {
+            position: absolute;
+            top: 60px;
+            left: 70px;
+            padding: 4px 8px;
+            background-color: #4b5563;
+            color: #fff;
+            font-size: 12px;
+            border-radius: 6px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 20;
+            font-weight: 600;
+        }
+
+        /* Custom table styling for positions and history */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #4b5563;
+        }
+        th {
+            background-color: #374151;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #3e4757;
+        }
+
+        /* Hide the number input arrows */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        .hidden {
             display: none;
         }
-        /* Style for disabled buttons */
-        .btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
+        
+        .disabled-btn {
+             cursor: not-allowed;
+             opacity: 0.5;
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="container bg-gray-800 p-6 rounded-xl shadow-lg flex flex-col lg:flex-row gap-6">
-        <!-- Simulator Controls -->
-        <div class="w-full lg:w-1/4 space-y-4">
-            <h1 class="text-3xl font-bold mb-4 text-center text-white">Investment Simulator</h1>
+<body class="p-4 sm:p-8 flex flex-col items-center justify-center min-h-screen">
+
+    <!-- Main container -->
+    <div class="container bg-gray-800 p-6 sm:p-8 rounded-xl shadow-lg w-full max-w-4xl">
+        
+        <!-- Start Screen -->
+        <div id="startScreen" class="flex flex-col items-center justify-center text-center">
+            <!-- 
+                STEP 2: CUSTOMIZE THIS FILE
+                Change the stock name here to match your data.
+            -->
+            <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-white">AAPL Investment Game</h1>
+            <p class="mb-6 text-gray-400">Select your funds and end date to begin the simulation.</p>
             
-            <!-- Date Navigation -->
-            <div class="bg-gray-700 p-4 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold mb-2 text-white">Date Navigation</h2>
-                <div class="flex items-center space-x-2 mb-2">
-                    <label for="date-picker" class="block text-sm font-medium text-gray-400">Current Date:</label>
-                    <input type="date" id="date-picker" class="flex-grow rounded-md bg-gray-800 text-white border border-gray-600 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="prev-day-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">Previous Day</button>
-                    <button id="next-day-btn" class="btn bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">Next Day</button>
-                    <button id="last-day-btn" class="col-span-2 btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">Go to Last Day</button>
-                </div>
-                <div class="grid grid-cols-2 gap-2 mt-2">
-                    <button id="range-30d-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">30 Days</button>
-                    <button id="range-90d-btn" class="btn bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">90 Days</button>
+            <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6 w-full">
+                <!-- Funds input -->
+                <div class="w-full sm:w-auto flex items-center space-x-2">
+                    <label for="startFunds" class="text-sm font-medium text-gray-300 whitespace-nowrap">Start Funds ($):</label>
+                    <input type="number" id="startFunds" class="w-24 form-input rounded-lg border-gray-600 bg-gray-700 text-gray-100 p-2 text-center" value="10000" min="1000" step="1000">
                 </div>
             </div>
 
-            <!-- Portfolio Status -->
-            <div class="bg-gray-700 p-4 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold mb-2 text-white">Portfolio</h2>
-                <div class="space-y-2">
-                    <p class="text-gray-300"><span class="font-bold">Cash:</span> <span id="cash-balance" class="text-green-400">$10,000.00</span></p>
-                    <p class="text-gray-300"><span class="font-bold">Shares Owned:</span> <span id="shares-owned" class="text-yellow-400">0</span></p>
-                    <p class="text-gray-300"><span class="font-bold">Stock Value:</span> <span id="stock-value" class="text-blue-400">$0.00</span></p>
-                    <p class="text-gray-300"><span class="font-bold">Total Portfolio:</span> <span id="total-portfolio" class="text-purple-400">$10,000.00</span></p>
-                </div>
+            <!-- Date picker -->
+            <div class="w-full sm:w-auto flex items-center space-x-2">
+                <label for="datePicker" class="text-sm font-medium text-gray-300 whitespace-nowrap">End Date:</label>
+                <input type="date" id="datePicker" class="form-input rounded-lg border-gray-600 bg-gray-700 text-gray-100 p-2 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-colors duration-200">
             </div>
-            
-            <!-- Trade Actions -->
-            <div class="bg-gray-700 p-4 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold mb-2 text-white">Trade Actions</h2>
-                <div class="flex space-x-2">
-                    <input type="number" id="trade-quantity" value="1" min="1" class="w-2/3 rounded-md bg-gray-800 text-white border border-gray-600 px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <button id="buy-btn" class="btn w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">Buy</button>
-                </div>
-                <button id="sell-btn" class="btn mt-2 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-md">Sell</button>
-            </div>
+
+            <button id="startGameBtn" class="mt-8 px-6 py-3 rounded-full font-bold bg-gray-600 disabled-btn transition-colors" disabled>Start Game</button>
+            <div id="startMessageArea" class="mt-4 text-red-400 font-semibold hidden"></div>
         </div>
+        
+        <!-- Game Screen -->
+        <div id="gameScreen" class="hidden">
+            <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-center text-white">AAPL Investment Simulator</h1>
 
-        <!-- Chart and Message Area -->
-        <div class="w-full lg:w-3/4 flex flex-col relative bg-gray-800 rounded-xl p-4">
-            <div id="message-area" class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-700 text-white p-6 rounded-lg z-10 shadow-xl text-center">
-                <p class="text-lg font-semibold"></p>
-                <button id="reload-btn" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Reload</button>
+            <!-- Button bar above the chart -->
+            <div class="flex flex-row justify-end items-center w-full mb-4 space-x-2">
+                <!-- Day navigation button -->
+                <div class="flex space-x-1 sm:space-x-2 w-full justify-end">
+                    <button id="nextDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors" disabled>Next Day</button>
+                </div>
             </div>
-            <div class="flex-grow relative">
-                <canvas id="stock-chart" class="w-full h-full"></canvas>
+            
+            <!-- Chart and message area -->
+            <div class="relative w-full h-[300px] sm:h-[500px]">
+                <canvas id="chartCanvas" class="w-full h-full"></canvas>
+                
+                <!-- New element to display the closing price of the day -->
+                <div id="crosshair-close-price"></div>
+                
+                <div id="messageArea" class="absolute inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70 rounded-xl transition-opacity duration-300 hidden">
+                    <p class="text-lg font-semibold text-white">Loading data...</p>
+                </div>
+                <!-- Elements to display crosshair info -->
                 <div id="crosshair-date"></div>
+                <div id="crosshair-price"></div>
+            </div>
+
+            <!-- Investment Controls Panel -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
+                <h2 class="text-xl font-bold mb-4 text-white">Investment Control</h2>
+                <!-- Use a single column layout with wrapping for mobile -->
+                <div class="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                    <div class="flex items-center space-x-2 w-full sm:w-auto justify-center">
+                        <label for="investAmount" class="text-sm font-medium text-gray-300 whitespace-nowrap">Max Investment ($):</label>
+                        <button id="minusBtn" class="px-2 py-1 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-bold transition-colors">-</button>
+                        <input type="number" id="investAmount" class="w-24 form-input rounded-lg border-gray-600 bg-gray-800 text-gray-100 p-2 text-center" value="1000" min="1000" step="1000">
+                        <button id="plusBtn" class="px-2 py-1 rounded-lg bg-gray-600 hover:bg-gray-500 text-white font-bold transition-colors">+</button>
+                    </div>
+                    <!-- Buttons are stacked on top of each other on mobile -->
+                    <div class="flex flex-row space-x-4 w-full sm:w-auto justify-center mt-4 sm:mt-0">
+                        <button id="buyBtn" class="w-full sm:w-auto px-6 py-2 rounded-full font-bold bg-green-600 hover:bg-green-700 transition-colors" disabled>BUY</button>
+                        <button id="sellBtn" class="w-full sm:w-auto px-6 py-2 rounded-full font-bold bg-red-600 hover:bg-red-700 transition-colors" disabled>SELL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio and Summary Panel -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
+                <h2 class="text-xl font-bold mb-4 text-white">My Portfolio</h2>
+                <!-- Grid columns now become a single column on mobile -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-gray-800 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-400">Total Invested</p>
+                        <p id="totalInvested" class="text-xl font-bold text-gray-100">$0.00</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-400">Remaining Funds</p>
+                        <p id="remainingFunds" class="text-xl font-bold text-gray-100">$0.00</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-400">Liquidation Value</p>
+                        <p id="liquidationValue" class="text-xl font-bold text-gray-100">$0.00</p>
+                    </div>
+                    <div class="bg-gray-800 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-400">Realized P&L</p>
+                        <p id="realizedPnL" class="text-xl font-bold text-gray-100">$0.00</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="positionsTable" class="min-w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Stock</th>
+                                <th>Shares</th>
+                                <th>Avg. Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Positions will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- History Panel -->
+            <div class="bg-gray-700 p-4 sm:p-6 rounded-xl shadow-md mt-6 w-full">
+                <h2 class="text-xl font-bold mb-4 text-white">Transaction History</h2>
+                <div class="overflow-x-auto">
+                    <table id="historyTable" class="min-w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Order</th>
+                                <th>#</th>
+                                <th>Price</th>
+                                <th>P&L</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- History will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Use an IIFE (Immediately Invoked Function Expression) to avoid global scope pollution
         (function() {
-            // --- Global Variables and DOM Elements ---
-            const chartCanvas = document.getElementById('stock-chart');
-            const chartCtx = chartCanvas.getContext('2d');
-            const datePicker = document.getElementById('date-picker');
-            const prevDayBtn = document.getElementById('prev-day-btn');
-            const nextDayBtn = document.getElementById('next-day-btn');
-            const lastDayBtn = document.getElementById('last-day-btn');
-            const rangeButtons = document.querySelectorAll('#range-30d-btn, #range-90d-btn');
-            const buyBtn = document.getElementById('buy-btn');
-            const sellBtn = document.getElementById('sell-btn');
-            const tradeQuantityInput = document.getElementById('trade-quantity');
-            const cashBalanceEl = document.getElementById('cash-balance');
-            const sharesOwnedEl = document.getElementById('shares-owned');
-            const stockValueEl = document.getElementById('stock-value');
-            const totalPortfolioEl = document.getElementById('total-portfolio');
-            const messageArea = document.getElementById('message-area');
-            const reloadBtn = document.getElementById('reload-btn');
+            // --- STEP 3: PASTE YOUR STOCK DATA HERE ---
+            //
+            // Replace the example data below with the content of your CSV file.
+            // Be sure to keep the backticks (`) and the 'symbol,per,date...' header row.
+            // This is the single, crucial place you'll change for each new stock file.
+            // The data must be in the format:
+            // symbol,per,date,time,open,high,low,close,vol,...
+            // Example: AAPL,D,20220103,0,177.83,182.88,177.78,182.01,104702000
+            
+            const rawData = `symbol,per,date,time,open,high,low,close,vol
+AAPL.US,D,19840907,000000,0.0996047,0.100827,0.0984022,0.0996047,98811715,0
+AAPL.US,D,19840910,000000,0.0996047,0.0999102,0.0972099,0.0990135,76694011,0
+AAPL.US,D,19840911,000000,0.0999102,0.10262,0.0999102,0.100827,180849030,0
+AAPL.US,D,19840912,000000,0.100827,0.101417,0.0977914,0.0977914,157987052,0
+AAPL.US,D,19840913,000000,0.103232,0.103526,0.103232,0.103232,246058991,0
+AAPL.US,D,19840914,000000,0.103526,0.107124,0.103526,0.10472,292979204,0
+AAPL.US,D,19840917,000000,0.10472,0.10862,0.10472,0.107725,217822986,0
+AAPL.US,D,19840918,000000,0.107725,0.1095,0.107725,0.10862,238549079,0
+AAPL.US,D,19840919,000000,0.10862,0.111915,0.10862,0.1095,302660143,0
+AAPL.US,D,19840920,000000,0.1095,0.111915,0.1095,0.1107,314811097,0
+AAPL.US,D,19840921,000000,0.1107,0.1128,0.1107,0.11161,288289063,0
+AAPL.US,D,19840924,000000,0.11161,0.11251,0.1107,0.1107,260844979,0
+AAPL.US,D,19840925,000000,0.1107,0.1128,0.1107,0.11161,164771092,0
+AAPL.US,D,19840926,000000,0.11161,0.113705,0.11161,0.11161,167475141,0
+AAPL.US,D,19840927,000000,0.11161,0.111915,0.1107,0.1107,159781896,0
+AAPL.US,D,19840928,000000,0.1107,0.111305,0.10891,0.10891,168058913,0
+AAPL.US,D,19841001,000000,0.10891,0.1101,0.107725,0.10862,187807185,0
+AAPL.US,D,19841002,000000,0.10862,0.1095,0.107725,0.10862,126079040,0
+AAPL.US,D,19841003,000000,0.10862,0.1104,0.10862,0.1104,118047020,0
+AAPL.US,D,19841004,000000,0.1104,0.111305,0.1104,0.1104,105151028,0
+AAPL.US,D,19841005,000000,0.1104,0.11161,0.1101,0.1107,98748986,0
+AAPL.US,D,19841008,000000,0.1107,0.1107,0.107725,0.10862,130182885,0
+AAPL.US,D,19841009,000000,0.10862,0.1095,0.107415,0.107725,108693899,0
+AAPL.US,D,19841010,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19841011,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19841012,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19841015,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19841016,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19841017,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19841018,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19841019,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19841022,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19841023,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19841024,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19841025,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19841026,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19841029,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19841030,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
+
+            // --- Global State Variables ---
+            let allStockData = [];
+            let stockData = [];
+            let currentIndex = -1;
+            let canvas, ctx;
+            let chartWidth, chartHeight;
+            let dataToDisplay = [];
+            let minPrice, maxPrice, priceScale;
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            
+            // --- Simulator State Variables ---
+            let portfolio = {};
+            let transactionHistory = [];
+            let totalInvestedAmount = 0;
+            let totalRealizedPnL = 0;
+            let startFunds = 0;
+            let remainingFunds = 0;
+            let liquidationValue = 0;
+
+            // --- DOM Elements ---
+            const datePicker = document.getElementById('datePicker');
+            const nextDayBtn = document.getElementById('nextDayBtn');
+            const messageArea = document.getElementById('messageArea');
             const crosshairDateEl = document.getElementById('crosshair-date');
+            const crosshairPriceEl = document.getElementById('crosshair-price');
+            const crosshairClosePriceEl = document.getElementById('crosshair-close-price');
+            
+            // Start Screen DOM Elements
+            const startScreen = document.getElementById('startScreen');
+            const gameScreen = document.getElementById('gameScreen');
+            const startFundsInput = document.getElementById('startFunds');
+            const startGameBtn = document.getElementById('startGameBtn');
+            const startMessageArea = document.getElementById('startMessageArea');
 
-            // --- Embedded Stock Data (Replaced file fetch) ---
-            const stockData = [
-                { "date": "2024-01-01", "open": 100.00, "high": 102.50, "low": 99.50, "close": 101.20, "volume": 150000 },
-                { "date": "2024-01-02", "open": 101.20, "high": 103.00, "low": 100.80, "close": 102.80, "volume": 180000 },
-                { "date": "2024-01-03", "open": 102.80, "high": 104.50, "low": 102.00, "close": 103.90, "volume": 220000 },
-                { "date": "2024-01-04", "open": 103.90, "high": 103.50, "low": 101.50, "close": 102.10, "volume": 190000 },
-                { "date": "2024-01-05", "open": 102.10, "high": 105.00, "low": 101.80, "close": 104.50, "volume": 250000 },
-                { "date": "2024-01-06", "open": 104.50, "high": 106.20, "low": 103.80, "close": 105.90, "volume": 210000 },
-                { "date": "2024-01-07", "open": 105.90, "high": 105.50, "low": 102.50, "close": 103.10, "volume": 170000 },
-                { "date": "2024-01-08", "open": 103.10, "high": 104.80, "low": 102.90, "close": 104.20, "volume": 195000 },
-                { "date": "2024-01-09", "open": 104.20, "high": 106.00, "low": 103.50, "close": 105.50, "volume": 230000 },
-                { "date": "2024-01-10", "open": 105.50, "high": 107.10, "low": 105.00, "close": 106.80, "volume": 260000 },
-                { "date": "2024-01-11", "open": 106.80, "high": 106.50, "low": 104.00, "close": 104.90, "volume": 200000 },
-                { "date": "2024-01-12", "open": 104.90, "high": 105.80, "low": 104.20, "close": 105.50, "volume": 180000 },
-                { "date": "2024-01-13", "open": 105.50, "high": 107.50, "low": 105.10, "close": 107.00, "volume": 240000 },
-                { "date": "2024-01-14", "open": 107.00, "high": 107.80, "low": 106.50, "close": 107.20, "volume": 215000 },
-                { "date": "2024-01-15", "open": 107.20, "high": 109.00, "low": 106.80, "close": 108.50, "volume": 280000 }
-            ];
+            // Simulator DOM Elements
+            const investAmountInput = document.getElementById('investAmount');
+            const minusBtn = document.getElementById('minusBtn');
+            const plusBtn = document.getElementById('plusBtn');
+            const buyBtn = document.getElementById('buyBtn');
+            const sellBtn = document.getElementById('sellBtn');
+            const totalInvestedEl = document.getElementById('totalInvested');
+            const remainingFundsEl = document.getElementById('remainingFunds');
+            const liquidationValueEl = document.getElementById('liquidationValue');
+            const realizedPnLEl = document.getElementById('realizedPnL');
+            const positionsTableBody = document.querySelector('#positionsTable tbody');
+            const historyTableBody = document.querySelector('#historyTable tbody');
+            
+            // Define padding and margins. Increased left padding for price labels.
+            const padding = 60;
 
-            // --- Simulation State Variables ---
-            let currentIndex = 0;
-            let portfolio = {
-                cash: 10000,
-                shares: 0,
-            };
+            // --- Initialization ---
+            document.addEventListener('DOMContentLoaded', () => {
+                canvas = document.getElementById('chartCanvas');
+                ctx = canvas.getContext('2d');
+                
+                // This is a key fix: We must set the canvas dimensions from JavaScript
+                // to make sure the drawing area is not 0x0.
+                const resizeObserver = new ResizeObserver(entries => {
+                    for (let entry of entries) {
+                        if(entry.target.id === 'chartCanvas') {
+                            chartWidth = entry.contentRect.width;
+                            chartHeight = entry.contentRect.height;
+                            canvas.width = chartWidth;
+                            canvas.height = chartHeight;
+                            if (stockData.length > 0) {
+                                drawChart();
+                            }
+                        }
+                    }
+                });
+                resizeObserver.observe(canvas);
 
-            // --- Chart Drawing Configuration ---
-            const chartPadding = 40;
-            const volumeHeight = 50;
-            const chartWidth = chartCanvas.width;
-            const chartHeight = chartCanvas.height;
+                // Parse all data immediately and set the date picker range
+                allStockData = parseData(rawData);
+                updateDatePickerRange(allStockData);
+                hideMessage();
+                updateStartButtonState();
 
-            // --- Core Functions ---
+                // Event Listeners
+                nextDayBtn.addEventListener('click', () => stepDay(1));
+                startGameBtn.addEventListener('click', startGame);
 
-            // Initial setup and data loading
-            function initSimulator() {
-                if (stockData.length === 0) {
-                    showMessage("Error: No stock data available. Please provide a valid data source.");
+                // Add event listeners for validation logic
+                datePicker.addEventListener('change', handleDateSelection);
+                startFundsInput.addEventListener('input', updateStartButtonState);
+
+                // Simulator event listeners
+                minusBtn.addEventListener('click', () => adjustInvestmentAmount(-1000));
+                plusBtn.addEventListener('click', () => adjustInvestmentAmount(1000));
+                buyBtn.addEventListener('click', handleBuy);
+                sellBtn.addEventListener('click', handleSell);
+
+                // Mouse event listeners for crosshair and date display
+                canvas.addEventListener('mousemove', handleMouseMove);
+                canvas.addEventListener('mouseleave', handleMouseLeave);
+            });
+            
+            // --- Start Screen Logic ---
+            function adjustInvestmentAmount(change) {
+                let currentAmount = parseFloat(investAmountInput.value);
+                let newAmount = currentAmount + change;
+                if (newAmount >= 1000) {
+                    investAmountInput.value = newAmount;
+                }
+            }
+
+            // New function to handle date selection and validate
+            function handleDateSelection() {
+                const selectedDateStr = datePicker.value;
+                const isDateValid = selectedDateStr && allStockData.some(day => {
+                    const dataDate = new Date(day.date.getTime());
+                    const dataDateStr = `${dataDate.getFullYear()}-${(dataDate.getMonth() + 1).toString().padStart(2, '0')}-${dataDate.getDate().toString().padStart(2, '0')}`;
+                    return dataDateStr === selectedDateStr;
+                });
+
+                if (isDateValid) {
+                    startMessageArea.classList.add('hidden');
+                } else {
+                    startMessageArea.textContent = 'Invalid end date. Please choose a valid trading day.';
+                    startMessageArea.classList.remove('hidden');
+                }
+                updateStartButtonState();
+            }
+
+            function startGame() {
+                const endDateStr = datePicker.value;
+                const initialFunds = parseFloat(startFundsInput.value);
+                
+                // Find the index of the selected end date in the full dataset
+                const endIndex = allStockData.findIndex(d => {
+                    const dataDate = new Date(d.date.getTime());
+                    const dataDateStr = `${dataDate.getFullYear()}-${(dataDate.getMonth() + 1).toString().padStart(2, '0')}-${dataDate.getDate().toString().padStart(2, '0')}`;
+                    return dataDateStr === endDateStr;
+                });
+
+                if (endIndex === -1) {
+                    startMessageArea.textContent = 'Could not find the selected end date. Please try again.';
+                    startMessageArea.classList.remove('hidden');
                     return;
                 }
+
+                // Slice the full dataset to the selected end date to create the game's data
+                stockData = allStockData.slice(0, endIndex + 1);
+
+                // Initialize game state
+                startFunds = initialFunds;
+                remainingFunds = initialFunds;
+                totalInvestedAmount = 0;
+                totalRealizedPnL = 0;
+                portfolio = {};
+                transactionHistory = [];
+                currentIndex = 0;
                 
-                currentIndex = stockData.length - 1;
-                updateSimulator();
-                addEventListeners();
-                hideMessage();
+                // Switch screens
+                startScreen.classList.add('hidden');
+                gameScreen.classList.remove('hidden');
+                
+                // Initialize game UI and draw the first day's chart
+                updateSimulatorButtons();
+                updatePortfolioValues();
+                renderPortfolio();
+                renderHistory();
+                drawChart();
             }
 
-            // Updates the simulator state and UI based on the current index
-            function updateSimulator() {
-                const currentData = stockData[currentIndex];
-                datePicker.value = currentData.date;
-                updatePortfolio();
-                updateButtonStates();
-                drawChart(currentIndex);
+            function updateStartButtonState() {
+                 const dateSelected = datePicker.value !== '';
+                 const fundsEntered = parseFloat(startFundsInput.value) > 0;
+                 const isReady = dateSelected && fundsEntered;
+                 
+                 startGameBtn.disabled = !isReady;
+                 if (isReady) {
+                     startGameBtn.classList.remove('bg-gray-600', 'disabled-btn');
+                     startGameBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                 } else {
+                     startGameBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                     startGameBtn.classList.add('bg-gray-600', 'disabled-btn');
+                 }
             }
 
-            // Updates portfolio stats on the UI
-            function updatePortfolio() {
-                const currentPrice = stockData[currentIndex].close;
-                const stockValue = portfolio.shares * currentPrice;
-                const totalPortfolio = portfolio.cash + stockValue;
-                cashBalanceEl.textContent = `$${portfolio.cash.toFixed(2)}`;
-                sharesOwnedEl.textContent = portfolio.shares;
-                stockValueEl.textContent = `$${stockValue.toFixed(2)}`;
-                totalPortfolioEl.textContent = `$${totalPortfolio.toFixed(2)}`;
-            }
-
-            // Draws the candlestick and volume chart
-            function drawChart(currentDayIndex) {
-                // Resize canvas to fit container
-                chartCanvas.width = chartCanvas.offsetWidth;
-                chartCanvas.height = chartCanvas.offsetHeight;
-                const width = chartCanvas.width;
-                const height = chartCanvas.height;
-
-                chartCtx.clearRect(0, 0, width, height);
-
-                const visibleRange = 90; // Default to 90 days for initial view
-                const startIndex = Math.max(0, currentDayIndex - visibleRange + 1);
-                const visibleData = stockData.slice(startIndex, currentDayIndex + 1);
-
-                if (visibleData.length === 0) return;
-
-                // Calculate price and volume ranges
-                const prices = visibleData.flatMap(d => [d.open, d.high, d.low, d.close]);
-                const maxPrice = Math.max(...prices);
-                const minPrice = Math.min(...prices);
-                const maxVolume = Math.max(...visibleData.map(d => d.volume));
-
-                // Drawing axes and labels
-                drawAxisLabels(width, height, maxPrice, minPrice, maxVolume);
-
-                const chartAreaHeight = height - chartPadding - volumeHeight;
-                const candleWidth = (width - chartPadding) / visibleData.length;
-
-                // Draw candlesticks and volume bars
-                visibleData.forEach((day, i) => {
-                    const x = chartPadding + i * candleWidth;
-                    const priceYScale = (height - chartPadding - volumeHeight) / (maxPrice - minPrice);
-                    const volumeYScale = volumeHeight / maxVolume;
-
-                    // Draw candlestick
-                    const openY = height - chartPadding - (day.open - minPrice) * priceYScale;
-                    const closeY = height - chartPadding - (day.close - minPrice) * priceYScale;
-                    const highY = height - chartPadding - (day.high - minPrice) * priceYScale;
-                    const lowY = height - chartPadding - (day.low - minPrice) * priceYScale;
-                    const isUp = day.close > day.open;
-                    const color = isUp ? '#10b981' : '#ef4444'; // Green or Red
-
-                    // Draw main body
-                    chartCtx.fillStyle = color;
-                    chartCtx.fillRect(x + candleWidth * 0.1, Math.min(openY, closeY), candleWidth * 0.8, Math.abs(openY - closeY) || 1);
-
-                    // Draw wick
-                    chartCtx.strokeStyle = color;
-                    chartCtx.lineWidth = 1;
-                    chartCtx.beginPath();
-                    chartCtx.moveTo(x + candleWidth / 2, highY);
-                    chartCtx.lineTo(x + candleWidth / 2, lowY);
-                    chartCtx.stroke();
-
-                    // Draw volume bar
-                    const volumeY = height - chartPadding + 2; // +2 for a small gap
-                    const volumeHeightScaled = day.volume * volumeYScale;
-                    chartCtx.fillStyle = color;
-                    chartCtx.fillRect(x + candleWidth * 0.1, volumeY, candleWidth * 0.8, -volumeHeightScaled);
-
-                    // Draw the current day's vertical line
-                    if (startIndex + i === currentDayIndex) {
-                        chartCtx.strokeStyle = '#60a5fa'; // Blue
-                        chartCtx.setLineDash([5, 5]);
-                        chartCtx.beginPath();
-                        chartCtx.moveTo(x + candleWidth / 2, 0);
-                        chartCtx.lineTo(x + candleWidth / 2, height - chartPadding);
-                        chartCtx.stroke();
-                        chartCtx.setLineDash([]);
-                    }
-                });
-            }
-
-            // Draws price and date labels
-            function drawAxisLabels(width, height, maxPrice, minPrice, maxVolume) {
-                chartCtx.font = '12px Inter';
-                chartCtx.fillStyle = '#e2e8f0';
-                chartCtx.textAlign = 'right';
-
-                // Price labels
-                for (let i = 0; i <= 4; i++) {
-                    const price = minPrice + (maxPrice - minPrice) * (i / 4);
-                    const y = height - chartPadding - (height - chartPadding - volumeHeight) * (i / 4);
-                    chartCtx.fillText(`$${price.toFixed(2)}`, chartPadding - 5, y);
-                }
-
-                // Volume labels
-                chartCtx.textAlign = 'right';
-                const volY = height - chartPadding;
-                chartCtx.fillText('Volume', chartPadding - 5, volY - volumeHeight - 5);
-                chartCtx.fillText(`${(maxVolume / 1000).toFixed(0)}K`, chartPadding - 5, volY - volumeHeight + 15);
-                chartCtx.fillText('0', chartPadding - 5, volY + 5);
-            }
-
-            // Handles resizing the canvas
-            function resizeCanvas() {
-                chartCanvas.width = chartCanvas.offsetWidth;
-                chartCanvas.height = chartCanvas.offsetHeight;
-                updateSimulator();
-            }
-
-            // --- Event Handlers and Listeners ---
-
-            function addEventListeners() {
-                // Resize listener
-                window.addEventListener('resize', resizeCanvas);
-
-                // Date Picker Change
-                datePicker.addEventListener('change', () => {
-                    const newDate = datePicker.value;
-                    const newIndex = stockData.findIndex(d => d.date === newDate);
-                    if (newIndex !== -1) {
-                        currentIndex = newIndex;
-                        updateSimulator();
-                    }
-                });
-
-                // Navigation Buttons
-                prevDayBtn.addEventListener('click', () => {
-                    if (currentIndex > 0) {
-                        currentIndex--;
-                        updateSimulator();
-                    }
-                });
-
-                nextDayBtn.addEventListener('click', () => {
-                    if (currentIndex < stockData.length - 1) {
-                        currentIndex++;
-                        updateSimulator();
-                    }
-                });
-
-                lastDayBtn.addEventListener('click', () => {
-                    currentIndex = stockData.length - 1;
-                    updateSimulator();
-                });
-
-                // Range Buttons
-                rangeButtons.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        let days;
-                        if (e.target.id === 'range-30d-btn') {
-                            days = 30;
-                        } else if (e.target.id === 'range-90d-btn') {
-                            days = 90;
-                        }
-                        const startIndex = Math.max(0, currentIndex - days + 1);
-                        drawChartWithRange(startIndex, currentIndex);
-                    });
-                });
-
-                // Buy and Sell
-                buyBtn.addEventListener('click', () => {
-                    const currentPrice = stockData[currentIndex].close;
-                    const quantity = parseInt(tradeQuantityInput.value, 10);
-                    if (quantity > 0 && portfolio.cash >= quantity * currentPrice) {
-                        portfolio.cash -= quantity * currentPrice;
-                        portfolio.shares += quantity;
-                        updatePortfolio();
-                    }
-                });
-
-                sellBtn.addEventListener('click', () => {
-                    const currentPrice = stockData[currentIndex].close;
-                    const quantity = parseInt(tradeQuantityInput.value, 10);
-                    if (quantity > 0 && portfolio.shares >= quantity) {
-                        portfolio.shares -= quantity;
-                        portfolio.cash += quantity * currentPrice;
-                        updatePortfolio();
-                    }
-                });
-
-                // Chart interactivity for crosshair
-                chartCanvas.addEventListener('mousemove', (e) => {
-                    const rect = chartCanvas.getBoundingClientRect();
-                    const x = e.clientX - rect.left - chartPadding;
-                    const width = chartCanvas.width;
-                    const visibleRange = 90;
-                    const startIndex = Math.max(0, currentIndex - visibleRange + 1);
-
-                    const totalDays = currentIndex - startIndex + 1;
-                    const candleWidth = (width - chartPadding) / totalDays;
-                    const hoveredIndex = Math.floor(x / candleWidth);
+            // --- Data Processing and Parsing ---
+            function parseData(text) {
+                const lines = text.trim().split('\n').slice(1);
+                return lines.map(line => {
+                    const parts = line.split(',');
+                    const dateStr = parts[2];
+                    const date = new Date(dateStr.substring(0, 4), dateStr.substring(4, 6) - 1, dateStr.substring(6, 8));
                     
-                    if (hoveredIndex >= 0 && hoveredIndex < totalDays) {
-                        const dataIndex = startIndex + hoveredIndex;
-                        const hoveredData = stockData[dataIndex];
-                        crosshairDateEl.textContent = hoveredData.date;
-                        crosshairDateEl.style.display = 'block';
-                        crosshairDateEl.style.left = `${e.clientX - rect.left}px`;
-                        
-                        // Redraw chart with crosshair
-                        drawChart(currentIndex);
-                        drawCrosshair(e.clientX - rect.left, e.clientY - rect.top);
-                    } else {
-                        crosshairDateEl.style.display = 'none';
-                        drawChart(currentIndex); // Redraw without crosshair
+                    return {
+                        date: date,
+                        stock: parts[0],
+                        open: parseFloat(parts[4]),
+                        high: parseFloat(parts[5]),
+                        low: parseFloat(parts[6]),
+                        close: parseFloat(parts[7])
+                    };
+                }).filter(item => !isNaN(item.open) && !isNaN(item.high) && !isNaN(item.low) && !isNaN(item.close));
+            }
+            
+            // This function now takes the specific stock data as an argument
+            function updateDatePickerRange(data) {
+                if (data.length > 0) {
+                    const firstDate = data[0].date;
+                    const lastDate = data[data.length - 1].date;
+                    datePicker.min = formatDate(firstDate);
+                    datePicker.max = formatDate(lastDate);
+                    // Reset the value to ensure it's within the new range
+                    datePicker.value = '';
+                }
+            }
+            
+            function stepDay(direction) {
+                const newIndex = currentIndex + direction;
+                if (newIndex >= 0 && newIndex < stockData.length) {
+                    currentIndex = newIndex;
+                    drawChart();
+                }
+                updateSimulatorButtons();
+            }
+            
+            // --- Chart Drawing Logic ---
+            function drawChart() {
+                // Clear the canvas for a fresh drawing
+                ctx.clearRect(0, 0, chartWidth, chartHeight);
+                
+                // Ensure there is data to draw and that the canvas has dimensions
+                if (stockData.length === 0 || chartWidth === 0 || chartHeight === 0) return;
+
+                // Display all data up to the current day
+                dataToDisplay = stockData.slice(0, currentIndex + 1);
+                if (dataToDisplay.length === 0) return;
+
+                // Find min/max prices to scale the chart
+                const prices = dataToDisplay.flatMap(d => [d.high, d.low]);
+                maxPrice = Math.max(...prices);
+                minPrice = Math.min(...prices);
+                
+                // Add a small buffer to the top and bottom of the chart
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                const chartAreaWidth = chartWidth - padding * 2;
+                const chartAreaHeight = chartHeight - padding * 2;
+
+                priceScale = chartAreaHeight / ((maxPrice - minPrice) + 2 * pricePadding);
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+
+                // Draw the axes
+                ctx.strokeStyle = '#6b7280';
+                ctx.beginPath();
+                ctx.moveTo(padding, chartHeight - padding);
+                ctx.lineTo(chartWidth - padding, chartHeight - padding);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(padding, padding);
+                ctx.lineTo(padding, chartHeight - padding);
+                ctx.stroke();
+
+                let previousMonth = -1;
+                let previousYear = -1;
+                dataToDisplay.forEach((day, index) => {
+                    const x = padding + index * dateScale + dateScale / 2;
+                    const openY = chartHeight - padding - (day.open - minPrice + pricePadding) * priceScale;
+                    const highY = chartHeight - padding - (day.high - minPrice + pricePadding) * priceScale;
+                    const lowY = chartHeight - padding - (day.low - minPrice + pricePadding) * priceScale;
+                    const closeY = chartHeight - padding - (day.close - minPrice + pricePadding) * priceScale;
+
+                    const isBullish = day.close >= day.open;
+                    ctx.strokeStyle = isBullish ? '#10b981' : '#ef4444';
+                    ctx.fillStyle = isBullish ? '#10b981' : '#ef4444';
+
+                    // Draw the vertical line (high-low)
+                    ctx.beginPath();
+                    ctx.moveTo(x, highY);
+                    ctx.lineTo(x, lowY);
+                    ctx.stroke();
+
+                    // Draw the candle body
+                    const bodyHeight = Math.abs(openY - closeY) || 1;
+                    const bodyWidth = Math.max(1, dateScale * 0.7); // Ensure body has a minimum width
+                    ctx.fillRect(x - bodyWidth / 2, Math.min(openY, closeY), bodyWidth, bodyHeight);
+
+                    const currentMonth = day.date.getMonth();
+                    const currentYear = day.date.getFullYear();
+                    
+                    // Draw month lines and labels
+                    if (index > 0 && currentMonth !== previousMonth) {
+                        ctx.strokeStyle = '#4b5563';
+                        ctx.setLineDash([5, 5]);
+                        ctx.beginPath();
+                        ctx.moveTo(x, padding);
+                        ctx.lineTo(x, chartHeight - padding);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.fillStyle = '#9ca3af';
+                        ctx.font = '10px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        const dateText = `${monthNames[currentMonth]}`;
+                        ctx.fillText(dateText, x, chartHeight - padding + 20);
                     }
+
+                    // Draw year lines and labels
+                    if (index > 0 && currentYear !== previousYear) {
+                        ctx.fillStyle = '#9ca3af';
+                        ctx.font = '12px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(currentYear, x, chartHeight - padding + 40);
+                    }
+
+                    previousMonth = currentMonth;
+                    previousYear = currentYear;
                 });
 
-                chartCanvas.addEventListener('mouseleave', () => {
-                    crosshairDateEl.style.display = 'none';
-                    drawChart(currentIndex);
-                });
+                // Draw price labels
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '10px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                const yAxisLabels = 5;
+                for (let i = 0; i <= yAxisLabels; i++) {
+                    const price = minPrice + pricePadding + (maxPrice - minPrice) * (i / yAxisLabels);
+                    const y = chartHeight - padding - (price - minPrice + pricePadding) * priceScale;
+                    ctx.fillText(price.toFixed(2), padding - 10, y);
+                }
+                
+                // Update the liquidation value based on the latest day's closing price
+                if (dataToDisplay.length > 0) {
+                     updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
+                     displayClosePrice(dataToDisplay[dataToDisplay.length - 1].close);
+                }
+            }
 
-                // Reload button
-                reloadBtn.addEventListener('click', () => {
-                    location.reload();
-                });
+            // --- Crosshair and Date/Price Display Logic ---
+            let crosshairX, crosshairY;
+
+            function handleMouseMove(event) {
+                if (stockData.length === 0) return;
+                const rect = canvas.getBoundingClientRect();
+                crosshairX = event.clientX - rect.left;
+                crosshairY = event.clientY - rect.top;
+
+                const chartAreaX = crosshairX >= padding && crosshairX <= chartWidth - padding;
+                const chartAreaY = crosshairY >= padding && crosshairY <= chartHeight - padding;
+
+                if (chartAreaX && chartAreaY) {
+                    drawChart();
+                    const dataIndex = getNearestCandleIndex(crosshairX);
+                    if (dataIndex !== -1) {
+                        const snappedX = getCandleXPosition(dataIndex);
+                        drawCrosshair(snappedX, crosshairY);
+                        displayCrosshairInfo(snappedX, crosshairY, dataIndex);
+                        updateLiquidationValue(dataToDisplay[dataIndex].close);
+                    } else {
+                         handleMouseLeave();
+                    }
+                } else {
+                    handleMouseLeave();
+                }
+            }
+
+            function handleMouseLeave() {
+                drawChart();
+                crosshairDateEl.style.opacity = 0;
+                crosshairPriceEl.style.opacity = 0;
+                crosshairClosePriceEl.style.opacity = 0;
+                
+                if (dataToDisplay.length > 0) {
+                     updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
+                     displayClosePrice(dataToDisplay[dataToDisplay.length - 1].close);
+                }
             }
 
             function drawCrosshair(x, y) {
-                const width = chartCanvas.width;
-                const height = chartCanvas.height;
-                
-                chartCtx.strokeStyle = '#60a5fa';
-                chartCtx.lineWidth = 1;
-                chartCtx.setLineDash([2, 2]);
+                ctx.setLineDash([2, 2]);
+                ctx.strokeStyle = '#ffffff';
 
-                // Vertical line
-                chartCtx.beginPath();
-                chartCtx.moveTo(x, 0);
-                chartCtx.lineTo(x, height);
-                chartCtx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, chartHeight - padding);
+                ctx.stroke();
 
-                // Horizontal line
-                chartCtx.beginPath();
-                chartCtx.moveTo(0, y);
-                chartCtx.lineTo(width, y);
-                chartCtx.stroke();
-                
-                chartCtx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(chartWidth - padding, y);
+                ctx.stroke();
+
+                ctx.setLineDash([]);
             }
 
-            // Function to draw chart with a specified range
-            function drawChartWithRange(start, end) {
-                const visibleData = stockData.slice(start, end + 1);
+            function displayCrosshairInfo(x, y, dataIndex) {
+                const day = dataToDisplay[dataIndex];
+                const formattedDate = formatCrosshairDate(day.date);
+                crosshairDateEl.textContent = formattedDate;
+                crosshairDateEl.style.left = `${x}px`;
+                crosshairDateEl.style.opacity = 1;
+
+                const price = yToPrice(y);
+                crosshairPriceEl.textContent = price.toFixed(2);
+                crosshairPriceEl.style.top = `${y}px`;
+                crosshairPriceEl.style.opacity = 1;
+            }
+
+            function displayClosePrice(price) {
+                crosshairClosePriceEl.textContent = `Close: ${price.toFixed(2)}`;
+                crosshairClosePriceEl.style.opacity = 1;
+            }
+
+            function formatCrosshairDate(date) {
+                const d = new Date(date);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = monthNames[d.getMonth()];
+                const year = d.getFullYear();
+                return `${day}-${month}-${year}`;
+            }
+
+            function getNearestCandleIndex(x) {
+                const chartAreaWidth = chartWidth - padding * 2;
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+                const index = Math.floor((x - padding) / dateScale);
+                if (index >= 0 && index < dataToDisplay.length) {
+                    return index;
+                }
+                return -1;
+            }
+
+            function getCandleXPosition(index) {
+                const chartAreaWidth = chartWidth - padding * 2;
+                const dateScale = chartAreaWidth / dataToDisplay.length;
+                return padding + index * dateScale + dateScale / 2;
+            }
+            
+            function priceToY(price) {
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                return chartHeight - padding - (price - minPrice + pricePadding) * priceScale;
+            }
+
+            function yToPrice(y) {
+                const chartAreaHeight = chartHeight - padding * 2;
+                const pricePadding = (maxPrice - minPrice) * 0.1;
+                const relativeY = chartHeight - padding - y;
+                const priceRange = (maxPrice - minPrice) + 2 * pricePadding;
+                const price = (relativeY / chartAreaHeight) * priceRange + minPrice - pricePadding;
+                return price;
+            }
+
+            // --- Simulator Logic ---
+            function handleBuy() {
+                if (stockData.length === 0 || currentIndex === -1) return;
+                const currentDay = stockData[currentIndex];
+                const currentPrice = currentDay.close;
+                const maxInvestment = parseFloat(investAmountInput.value);
                 
-                if (visibleData.length === 0) return;
+                if (currentPrice <= 0 || maxInvestment <= 0 || isNaN(maxInvestment)) return;
 
-                // Calculate price and volume ranges for the specific view
-                const prices = visibleData.flatMap(d => [d.open, d.high, d.low, d.close]);
-                const maxPrice = Math.max(...prices);
-                const minPrice = Math.min(...prices);
-                const maxVolume = Math.max(...visibleData.map(d => d.volume));
+                const sharesToBuy = Math.floor(maxInvestment / currentPrice);
+                if (sharesToBuy === 0) {
+                     console.log("Maximum investment is too small to buy even one share.");
+                    return;
+                }
 
-                // Clear and redraw for the specified range
-                chartCtx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-                drawAxisLabels(chartCanvas.width, chartCanvas.height, maxPrice, minPrice, maxVolume);
+                const cost = sharesToBuy * currentPrice;
+                const stock = currentDay.stock;
 
-                const width = chartCanvas.width;
-                const height = chartCanvas.height;
-                const chartAreaHeight = height - chartPadding - volumeHeight;
-                const candleWidth = (width - chartPadding) / visibleData.length;
+                if (cost > remainingFunds) {
+                    console.log("Not enough funds to buy shares.");
+                    return;
+                }
 
-                visibleData.forEach((day, i) => {
-                    const x = chartPadding + i * candleWidth;
-                    const priceYScale = chartAreaHeight / (maxPrice - minPrice);
-                    const volumeYScale = volumeHeight / maxVolume;
+                if (portfolio[stock]) {
+                    // Update existing position
+                    const currentShares = portfolio[stock].shares;
+                    const currentCost = currentShares * portfolio[stock].avgPrice;
+                    const newTotalShares = currentShares + sharesToBuy;
+                    const newTotalCost = currentCost + cost;
+                    const newAvgPrice = newTotalCost / newTotalShares;
+                    
+                    portfolio[stock].shares = newTotalShares;
+                    portfolio[stock].avgPrice = newAvgPrice;
+                } else {
+                    // Create new position
+                    portfolio[stock] = {
+                        shares: sharesToBuy,
+                        avgPrice: currentPrice
+                    };
+                }
 
-                    // Draw candlestick
-                    const openY = height - chartPadding - (day.open - minPrice) * priceYScale;
-                    const closeY = height - chartPadding - (day.close - minPrice) * priceYScale;
-                    const highY = height - chartPadding - (day.high - minPrice) * priceYScale;
-                    const lowY = height - chartPadding - (day.low - minPrice) * priceYScale;
-                    const isUp = day.close > day.open;
-                    const color = isUp ? '#10b981' : '#ef4444';
+                totalInvestedAmount += cost;
+                remainingFunds -= cost;
+                
+                // Add to history
+                transactionHistory.push({
+                    date: currentDay.date,
+                    operation: 'Buy',
+                    shares: sharesToBuy,
+                    price: currentPrice,
+                    realizedPnL: 0
+                });
 
-                    chartCtx.fillStyle = color;
-                    chartCtx.fillRect(x + candleWidth * 0.1, Math.min(openY, closeY), candleWidth * 0.8, Math.abs(openY - closeY) || 1);
+                updatePortfolioValues();
+                renderPortfolio();
+                renderHistory();
+            }
 
-                    chartCtx.strokeStyle = color;
-                    chartCtx.lineWidth = 1;
-                    chartCtx.beginPath();
-                    chartCtx.moveTo(x + candleWidth / 2, highY);
-                    chartCtx.lineTo(x + candleWidth / 2, lowY);
-                    chartCtx.stroke();
+            function handleSell() {
+                if (stockData.length === 0 || currentIndex === -1) return;
+                const currentDay = stockData[currentIndex];
+                const currentPrice = currentDay.close;
+                const stock = currentDay.stock;
+                
+                if (!portfolio[stock] || portfolio[stock].shares === 0) {
+                    console.log("No shares to sell.");
+                    return;
+                }
 
-                    // Draw volume bar
-                    const volumeY = height - chartPadding + 2;
-                    const volumeHeightScaled = day.volume * volumeYScale;
-                    chartCtx.fillStyle = color;
-                    chartCtx.fillRect(x + candleWidth * 0.1, volumeY, candleWidth * 0.8, -volumeHeightScaled);
+                const sharesToSell = portfolio[stock].shares;
+                const avgPrice = portfolio[stock].avgPrice;
+                const gainLoss = (currentPrice - avgPrice) * sharesToSell;
+
+                totalRealizedPnL += gainLoss;
+                remainingFunds += currentPrice * sharesToSell;
+                
+                totalInvestedAmount -= sharesToSell * avgPrice;
+                
+                // Add to history
+                transactionHistory.push({
+                    date: currentDay.date,
+                    operation: 'Sell',
+                    shares: sharesToSell,
+                    price: currentPrice,
+                    realizedPnL: gainLoss
+                });
+                
+                // Remove from portfolio
+                delete portfolio[stock];
+
+                updatePortfolioValues();
+                renderPortfolio();
+                renderHistory();
+            }
+
+            function updateLiquidationValue(currentPrice) {
+                let openPositionsValue = 0;
+                for (const stock in portfolio) {
+                    openPositionsValue += portfolio[stock].shares * currentPrice;
+                }
+                liquidationValue = remainingFunds + openPositionsValue;
+                updatePortfolioValues();
+            }
+
+            function updatePortfolioValues() {
+                totalInvestedEl.textContent = `$${totalInvestedAmount.toFixed(2)}`;
+                remainingFundsEl.textContent = `$${remainingFunds.toFixed(2)}`;
+                liquidationValueEl.textContent = `$${liquidationValue.toFixed(2)}`;
+                realizedPnLEl.textContent = `$${totalRealizedPnL.toFixed(2)}`;
+                
+                // Style the P&L text
+                realizedPnLEl.classList.remove('text-red-500', 'text-green-500');
+                if (totalRealizedPnL > 0) realizedPnLEl.classList.add('text-green-500');
+                if (totalRealizedPnL < 0) realizedPnLEl.classList.add('text-red-500');
+
+                liquidationValueEl.classList.remove('text-red-500', 'text-green-500');
+                if (liquidationValue > startFunds) liquidationValueEl.classList.add('text-green-500');
+                if (liquidationValue < startFunds) liquidationValueEl.classList.add('text-red-500');
+            }
+
+            function renderPortfolio() {
+                positionsTableBody.innerHTML = '';
+                for (const stock in portfolio) {
+                    const position = portfolio[stock];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${stock}</td>
+                        <td>${position.shares.toFixed(0)}</td>
+                        <td>$${position.avgPrice.toFixed(2)}</td>
+                    `;
+                    positionsTableBody.appendChild(row);
+                }
+            }
+
+            function renderHistory() {
+                historyTableBody.innerHTML = '';
+                // Render in reverse chronological order
+                [...transactionHistory].reverse().forEach(movement => {
+                    const row = document.createElement('tr');
+                    let pnlColorClass = '';
+                    if (movement.operation === 'Sell') {
+                        if (movement.realizedPnL > 0) pnlColorClass = 'text-green-500';
+                        if (movement.realizedPnL < 0) pnlColorClass = 'text-red-500';
+                    }
+                    row.innerHTML = `
+                        <td>${formatDate(movement.date)}</td>
+                        <td>${movement.operation}</td>
+                        <td>${movement.shares.toFixed(0)}</td>
+                        <td>$${movement.price.toFixed(2)}</td>
+                        <td class="${pnlColorClass}">$${movement.realizedPnL.toFixed(2)}</td>
+                    `;
+                    historyTableBody.appendChild(row);
                 });
             }
 
-            // Initial call to start the app
-            window.onload = initSimulator;
+            // --- UI Helpers ---
+            function formatDate(date) {
+                if (!date) return '';
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
 
+            function updateSimulatorButtons() {
+                if (currentIndex >= stockData.length - 1) {
+                    nextDayBtn.disabled = true;
+                    buyBtn.disabled = true;
+                    sellBtn.disabled = true;
+                } else {
+                    nextDayBtn.disabled = false;
+                    buyBtn.disabled = false;
+                    sellBtn.disabled = false;
+                }
+            }
+
+            function showMessage(msg) {
+                messageArea.classList.remove('hidden');
+                messageArea.querySelector('p').textContent = msg;
+                if(nextDayBtn) nextDayBtn.disabled = true;
+                if(buyBtn) buyBtn.disabled = true;
+                if(sellBtn) sellBtn.disabled = true;
+            }
+
+            function hideMessage() {
+                messageArea.classList.add('hidden');
+            }
         })();
     </script>
 </body>
