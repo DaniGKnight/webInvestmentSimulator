@@ -109,6 +109,10 @@
              cursor: not-allowed;
              opacity: 0.5;
         }
+
+        .zoom-btn.selected {
+            background-color: #4f46e5;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 flex flex-col items-center justify-center min-h-screen">
@@ -133,6 +137,14 @@
                 </div>
             </div>
 
+            <!-- Zoom controls for Start Screen -->
+            <div class="flex items-center space-x-2 w-full justify-center mb-6">
+                 <label class="text-sm font-medium text-gray-300">Candles to display:</label>
+                 <button id="zoom50" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors selected">50</button>
+                 <button id="zoom100" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">100</button>
+                 <button id="zoom200" class="zoom-btn px-4 py-2 rounded-full font-bold bg-gray-600 hover:bg-gray-500 transition-colors">200</button>
+            </div>
+
             <!-- Date picker -->
             <div class="w-full sm:w-auto flex items-center space-x-2">
                 <label for="datePicker" class="text-sm font-medium text-gray-300 whitespace-nowrap">End Date:</label>
@@ -151,7 +163,8 @@
             <div class="flex flex-row justify-end items-center w-full mb-4 space-x-2">
                 <!-- Day navigation button -->
                 <div class="flex space-x-1 sm:space-x-2 w-full justify-end">
-                    <button id="nextDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors" disabled>Next Day</button>
+                    <button id="prevDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors" disabled>Previous Day</button>
+                    <button id="nextDayBtn" class="text-sm sm:text-base flex-1 sm:flex-none px-4 py-2 rounded-full font-bold bg-violet-600 hover:bg-violet-700 transition-colors">Next Day</button>
                 </div>
             </div>
             
@@ -301,7 +314,199 @@ AAPL.US,D,19841025,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
 AAPL.US,D,19841026,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
 AAPL.US,D,19841029,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
 AAPL.US,D,19841030,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
-AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
+AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19841101,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19841102,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19841105,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19841106,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19841107,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19841108,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19841109,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19841112,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19841113,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19841114,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19841115,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19841116,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19841119,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19841120,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19841121,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19841122,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19841123,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19841126,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19841127,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19841128,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19841129,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19841130,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19841203,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19841204,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19841205,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19841206,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19841207,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19841210,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19841211,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19841212,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19841213,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19841214,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19841217,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19841218,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19841219,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19841220,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19841221,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19841224,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19841226,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19841227,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19841228,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19841231,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850102,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850103,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850104,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850107,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850108,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850109,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850110,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850111,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850114,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850115,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850116,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850117,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850118,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850121,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850122,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850123,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850124,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850125,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850128,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850129,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850130,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850131,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850201,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850204,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850205,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850206,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850207,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850208,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850211,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850212,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850213,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850214,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850215,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850218,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850219,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850220,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850221,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850222,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850225,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850226,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850227,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850228,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850301,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850304,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850305,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850306,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850307,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850308,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850311,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850312,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850313,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850314,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850315,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850318,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850319,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850320,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850321,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850322,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850325,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850326,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850327,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850328,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850329,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850401,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850402,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850403,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850404,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850405,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850408,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850409,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850410,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850411,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850412,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850415,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850416,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850417,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850418,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850419,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850422,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850423,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850424,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850425,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850426,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850429,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850430,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850501,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850502,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850503,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850506,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850507,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850508,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850509,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850510,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850513,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850514,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850515,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850516,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850517,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850520,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850521,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850522,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850523,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850524,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850527,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850528,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850529,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850530,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850531,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850603,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850604,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850605,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850606,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850607,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850610,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850611,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850612,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850613,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850614,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850617,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850618,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850619,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850620,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850621,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850624,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850625,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850626,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850627,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850628,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850701,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850702,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850703,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850705,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850708,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850709,000000,0.10891,0.10891,0.107415,0.107725,125026048,0
+AAPL.US,D,19850710,000000,0.107725,0.10862,0.107725,0.10862,109311400,0
+AAPL.US,D,19850711,000000,0.10862,0.1107,0.10862,0.1104,105193910,0
+AAPL.US,D,19850712,000000,0.1104,0.1104,0.10862,0.1095,127598858,0
+AAPL.US,D,19850715,000000,0.1095,0.111005,0.1095,0.1107,143890820,0
+AAPL.US,D,19850716,000000,0.1107,0.111305,0.10891,0.1104,127598858,0
+AAPL.US,D,19850717,000000,0.1104,0.1128,0.1104,0.1128,155100067,0
+AAPL.US,D,19850718,000000,0.1128,0.11431,0.1128,0.113705,183178051,0
+AAPL.US,D,19850719,000000,0.113705,0.113705,0.11161,0.11251,135248817,0
+AAPL.US,D,19850722,000000,0.11251,0.1134,0.1107,0.11161,124806037,0
+AAPL.US,D,19850723,000000,0.11161,0.1128,0.11161,0.11161,128884024,0
+AAPL.US,D,19850724,000000,0.11161,0.1128,0.11161,0.1128,95889006,0
+AAPL.US,D,19850725,000000,0.1128,0.113705,0.11161,0.11161,137095945,0
+AAPL.US,D,19850726,000000,0.11161,0.11251,0.1104,0.111305,108643039,0
+AAPL.US,D,19850729,000000,0.111305,0.111915,0.1098,0.1101,114704047,0
+AAPL.US,D,19850730,000000,0.1101,0.1104,0.10862,0.10891,105370997,0
+AAPL.US,D,19850731,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
 
             // --- Global State Variables ---
             let allStockData = [];
@@ -313,7 +518,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             let minPrice, maxPrice, priceScale;
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             
-            // --- Simulator State Variables ---
+            // Simulator State Variables
             let portfolio = {};
             let transactionHistory = [];
             let totalInvestedAmount = 0;
@@ -321,9 +526,11 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             let startFunds = 0;
             let remainingFunds = 0;
             let liquidationValue = 0;
+            let candlesToDisplay = 50;
 
             // --- DOM Elements ---
             const datePicker = document.getElementById('datePicker');
+            const prevDayBtn = document.getElementById('prevDayBtn');
             const nextDayBtn = document.getElementById('nextDayBtn');
             const messageArea = document.getElementById('messageArea');
             const crosshairDateEl = document.getElementById('crosshair-date');
@@ -336,6 +543,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             const startFundsInput = document.getElementById('startFunds');
             const startGameBtn = document.getElementById('startGameBtn');
             const startMessageArea = document.getElementById('startMessageArea');
+            const zoomButtons = document.querySelectorAll('.zoom-btn');
 
             // Simulator DOM Elements
             const investAmountInput = document.getElementById('investAmount');
@@ -382,12 +590,23 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 updateStartButtonState();
 
                 // Event Listeners
+                prevDayBtn.addEventListener('click', () => stepDay(-1));
                 nextDayBtn.addEventListener('click', () => stepDay(1));
                 startGameBtn.addEventListener('click', startGame);
 
                 // Add event listeners for validation logic
                 datePicker.addEventListener('change', handleDateSelection);
                 startFundsInput.addEventListener('input', updateStartButtonState);
+                
+                // Add event listeners for zoom buttons
+                zoomButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        zoomButtons.forEach(b => b.classList.remove('selected'));
+                        e.target.classList.add('selected');
+                        candlesToDisplay = parseInt(e.target.textContent);
+                        updateDatePickerRange(allStockData);
+                    });
+                });
 
                 // Simulator event listeners
                 minusBtn.addEventListener('click', () => adjustInvestmentAmount(-1000));
@@ -443,9 +662,13 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                     startMessageArea.classList.remove('hidden');
                     return;
                 }
-
-                // Slice the full dataset to the selected end date to create the game's data
-                stockData = allStockData.slice(0, endIndex + 1);
+                
+                // Set the initial index to be the end date
+                currentIndex = endIndex;
+                
+                // Slice the full dataset to the selected end date and number of candles to display
+                const startIndex = Math.max(0, endIndex - candlesToDisplay + 1);
+                stockData = allStockData.slice(startIndex, endIndex + 1);
 
                 // Initialize game state
                 startFunds = initialFunds;
@@ -454,8 +677,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 totalRealizedPnL = 0;
                 portfolio = {};
                 transactionHistory = [];
-                currentIndex = 0;
-                
+
                 // Switch screens
                 startScreen.classList.add('hidden');
                 gameScreen.classList.remove('hidden');
@@ -505,10 +727,15 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             // This function now takes the specific stock data as an argument
             function updateDatePickerRange(data) {
                 if (data.length > 0) {
-                    const firstDate = data[0].date;
-                    const lastDate = data[data.length - 1].date;
-                    datePicker.min = formatDate(firstDate);
-                    datePicker.max = formatDate(lastDate);
+                    // Find the earliest possible date that allows for at least `candlesToDisplay` days
+                    const minDateIndex = candlesToDisplay - 1;
+                    if (minDateIndex < data.length) {
+                         const firstSelectableDate = data[minDateIndex].date;
+                         datePicker.min = formatDate(firstSelectableDate);
+                         const lastDate = data[data.length - 1].date;
+                         datePicker.max = formatDate(lastDate);
+                    }
+                    
                     // Reset the value to ensure it's within the new range
                     datePicker.value = '';
                 }
@@ -516,8 +743,12 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             
             function stepDay(direction) {
                 const newIndex = currentIndex + direction;
-                if (newIndex >= 0 && newIndex < stockData.length) {
+                const newRelativeIndex = stockData.findIndex(d => d.date.getTime() === allStockData[newIndex].date.getTime());
+                
+                if (newIndex >= (candlesToDisplay - 1) && newIndex < allStockData.length) {
                     currentIndex = newIndex;
+                    const startIndex = Math.max(0, currentIndex - candlesToDisplay + 1);
+                    stockData = allStockData.slice(startIndex, currentIndex + 1);
                     drawChart();
                 }
                 updateSimulatorButtons();
@@ -531,12 +762,8 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 // Ensure there is data to draw and that the canvas has dimensions
                 if (stockData.length === 0 || chartWidth === 0 || chartHeight === 0) return;
 
-                // Display all data up to the current day
-                dataToDisplay = stockData.slice(0, currentIndex + 1);
-                if (dataToDisplay.length === 0) return;
-
                 // Find min/max prices to scale the chart
-                const prices = dataToDisplay.flatMap(d => [d.high, d.low]);
+                const prices = stockData.flatMap(d => [d.high, d.low]);
                 maxPrice = Math.max(...prices);
                 minPrice = Math.min(...prices);
                 
@@ -546,7 +773,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 const chartAreaHeight = chartHeight - padding * 2;
 
                 priceScale = chartAreaHeight / ((maxPrice - minPrice) + 2 * pricePadding);
-                const dateScale = chartAreaWidth / dataToDisplay.length;
+                const dateScale = chartAreaWidth / stockData.length;
 
                 // Draw the axes
                 ctx.strokeStyle = '#6b7280';
@@ -562,7 +789,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
 
                 let previousMonth = -1;
                 let previousYear = -1;
-                dataToDisplay.forEach((day, index) => {
+                stockData.forEach((day, index) => {
                     const x = padding + index * dateScale + dateScale / 2;
                     const openY = chartHeight - padding - (day.open - minPrice + pricePadding) * priceScale;
                     const highY = chartHeight - padding - (day.high - minPrice + pricePadding) * priceScale;
@@ -629,9 +856,9 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 }
                 
                 // Update the liquidation value based on the latest day's closing price
-                if (dataToDisplay.length > 0) {
-                     updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
-                     displayClosePrice(dataToDisplay[dataToDisplay.length - 1].close);
+                if (stockData.length > 0) {
+                     updateLiquidationValue(stockData[stockData.length - 1].close);
+                     displayClosePrice(stockData[stockData.length - 1].close);
                 }
             }
 
@@ -654,7 +881,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                         const snappedX = getCandleXPosition(dataIndex);
                         drawCrosshair(snappedX, crosshairY);
                         displayCrosshairInfo(snappedX, crosshairY, dataIndex);
-                        updateLiquidationValue(dataToDisplay[dataIndex].close);
+                        updateLiquidationValue(stockData[dataIndex].close);
                     } else {
                          handleMouseLeave();
                     }
@@ -669,9 +896,9 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
                 crosshairPriceEl.style.opacity = 0;
                 crosshairClosePriceEl.style.opacity = 0;
                 
-                if (dataToDisplay.length > 0) {
-                     updateLiquidationValue(dataToDisplay[dataToDisplay.length - 1].close);
-                     displayClosePrice(dataToDisplay[dataToDisplay.length - 1].close);
+                if (stockData.length > 0) {
+                     updateLiquidationValue(stockData[stockData.length - 1].close);
+                     displayClosePrice(stockData[stockData.length - 1].close);
                 }
             }
 
@@ -693,7 +920,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             }
 
             function displayCrosshairInfo(x, y, dataIndex) {
-                const day = dataToDisplay[dataIndex];
+                const day = stockData[dataIndex];
                 const formattedDate = formatCrosshairDate(day.date);
                 crosshairDateEl.textContent = formattedDate;
                 crosshairDateEl.style.left = `${x}px`;
@@ -720,9 +947,9 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
 
             function getNearestCandleIndex(x) {
                 const chartAreaWidth = chartWidth - padding * 2;
-                const dateScale = chartAreaWidth / dataToDisplay.length;
+                const dateScale = chartAreaWidth / stockData.length;
                 const index = Math.floor((x - padding) / dateScale);
-                if (index >= 0 && index < dataToDisplay.length) {
+                if (index >= 0 && index < stockData.length) {
                     return index;
                 }
                 return -1;
@@ -730,7 +957,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
 
             function getCandleXPosition(index) {
                 const chartAreaWidth = chartWidth - padding * 2;
-                const dateScale = chartAreaWidth / dataToDisplay.length;
+                const dateScale = chartAreaWidth / stockData.length;
                 return padding + index * dateScale + dateScale / 2;
             }
             
@@ -751,7 +978,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             // --- Simulator Logic ---
             function handleBuy() {
                 if (stockData.length === 0 || currentIndex === -1) return;
-                const currentDay = stockData[currentIndex];
+                const currentDay = allStockData[currentIndex];
                 const currentPrice = currentDay.close;
                 const maxInvestment = parseFloat(investAmountInput.value);
                 
@@ -808,7 +1035,7 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
 
             function handleSell() {
                 if (stockData.length === 0 || currentIndex === -1) return;
-                const currentDay = stockData[currentIndex];
+                const currentDay = allStockData[currentIndex];
                 const currentPrice = currentDay.close;
                 const stock = currentDay.stock;
                 
@@ -914,14 +1141,27 @@ AAPL.US,D,19841031,000000,0.10891,0.10891,0.107415,0.107725,125026048,0`;
             }
 
             function updateSimulatorButtons() {
-                if (currentIndex >= stockData.length - 1) {
+                // If we are at the end of the full data set
+                if (currentIndex >= allStockData.length - 1) {
                     nextDayBtn.disabled = true;
-                    buyBtn.disabled = true;
-                    sellBtn.disabled = true;
                 } else {
                     nextDayBtn.disabled = false;
-                    buyBtn.disabled = false;
-                    sellBtn.disabled = false;
+                }
+
+                // If we are at the first day of the currently displayed data
+                if (currentIndex <= candlesToDisplay - 1) {
+                    prevDayBtn.disabled = true;
+                } else {
+                    prevDayBtn.disabled = false;
+                }
+
+                // Buy/Sell buttons are always enabled as long as there is data
+                if (stockData.length > 0) {
+                     buyBtn.disabled = false;
+                     sellBtn.disabled = false;
+                } else {
+                     buyBtn.disabled = true;
+                     sellBtn.disabled = true;
                 }
             }
 
